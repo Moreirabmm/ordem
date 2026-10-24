@@ -103,19 +103,22 @@ body {
   user-select: none;
 }
 
-/* Ambient Subtle Background Lighting */
+/* Ambient Subtle Background Lighting - Hardware Layer Accelerated */
 .ambient-glow {
   position: fixed;
   border-radius: 50%;
-  filter: blur(120px);
   pointer-events: none;
   z-index: 0;
-  opacity: 0.18;
+  opacity: 0.16;
+  filter: blur(60px);
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
   transition: opacity 0.5s ease;
 }
 
 [data-theme="light"] .ambient-glow {
-  opacity: 0.10;
+  opacity: 0.09;
 }
 
 .glow-1 {
@@ -417,6 +420,8 @@ body {
   overflow-x: hidden;
   padding: 36px 48px 60px;
   scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  will-change: scroll-position;
 }
 
 /* Custom Minimal Scrollbar */
@@ -505,8 +510,8 @@ body {
    ========================================================================== */
 .hero-card {
   background: var(--bg-card);
-  backdrop-filter: blur(30px) saturate(160%);
-  -webkit-backdrop-filter: blur(30px) saturate(160%);
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: 24px 32px;
@@ -515,6 +520,7 @@ body {
   gap: 36px;
   margin-bottom: 24px;
   box-shadow: var(--glass-shadow);
+  transform: translateZ(0);
 }
 
 .rings-wrapper {
@@ -581,16 +587,17 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* Card Elements */
+/* Card Elements - Hardware Accelerated Glass */
 .card {
   background: var(--bg-card);
-  backdrop-filter: blur(25px);
-  -webkit-backdrop-filter: blur(25px);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: 20px 24px;
   box-shadow: var(--glass-shadow);
-  transition: all var(--trans-normal);
+  transition: border-color var(--trans-fast), transform var(--trans-fast);
+  transform: translateZ(0);
 }
 
 .card:hover {
@@ -1602,7 +1609,6 @@ body {
 
 .habit-detailed-card {
   background: var(--bg-card);
-  backdrop-filter: blur(25px);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: 20px;
@@ -1610,7 +1616,11 @@ body {
   flex-direction: column;
   justify-content: space-between;
   gap: 16px;
-  transition: all var(--trans-normal);
+  box-shadow: var(--glass-shadow);
+  transition: border-color var(--trans-fast), transform var(--trans-fast);
+  transform: translateZ(0);
+  content-visibility: auto;
+  contain-intrinsic-size: 0 150px;
 }
 
 .habit-detailed-card:hover {
@@ -1968,12 +1978,11 @@ body {
   width: 90%;
   max-width: 540px;
   background: var(--bg-elevated);
-  backdrop-filter: blur(40px);
   border: 1px solid var(--border-strong);
   border-radius: var(--radius-lg);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
   overflow: hidden;
-  transform: scale(0.95) translateY(10px);
+  transform: scale(0.95) translateY(10px) translateZ(0);
   transition: transform 0.25s var(--ease-apple);
 }
 
@@ -2475,7 +2484,6 @@ body {
 
 .exercise-card {
   background: var(--bg-card);
-  backdrop-filter: blur(25px);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: 16px 18px;
@@ -2483,7 +2491,11 @@ body {
   flex-direction: column;
   justify-content: space-between;
   gap: 14px;
-  transition: all var(--trans-fast);
+  box-shadow: var(--glass-shadow);
+  transition: border-color var(--trans-fast), transform var(--trans-fast);
+  transform: translateZ(0);
+  content-visibility: auto;
+  contain-intrinsic-size: 0 140px;
 }
 
 .exercise-card:hover {
@@ -2733,7 +2745,6 @@ body {
 
 .kanban-column {
   background: var(--bg-card);
-  backdrop-filter: blur(25px);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: 14px;
@@ -2741,7 +2752,9 @@ body {
   flex-direction: column;
   gap: 12px;
   min-height: 480px;
-  transition: all var(--trans-fast);
+  box-shadow: var(--glass-shadow);
+  transition: border-color var(--trans-fast), background var(--trans-fast);
+  transform: translateZ(0);
 }
 
 .kanban-column.drag-over {
@@ -3016,14 +3029,15 @@ body {
 
 .finance-kpi-card {
   background: var(--bg-card);
-  backdrop-filter: blur(25px);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: 18px 20px;
   display: flex;
   flex-direction: column;
   gap: 6px;
-  transition: all var(--trans-fast);
+  box-shadow: var(--glass-shadow);
+  transition: border-color var(--trans-fast), transform var(--trans-fast);
+  transform: translateZ(0);
 }
 
 .finance-kpi-card:hover {
@@ -3077,11 +3091,11 @@ body {
 /* Spreadsheet Ledger Table */
 .finance-table-card {
   background: var(--bg-card);
-  backdrop-filter: blur(25px);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--glass-shadow);
+  transform: translateZ(0);
 }
 
 .table-responsive-wrapper {
@@ -3224,13 +3238,16 @@ body {
 
 .book-card {
   background: var(--bg-card);
-  backdrop-filter: blur(25px);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: 18px;
   display: flex;
   gap: 16px;
-  transition: all var(--trans-fast);
+  box-shadow: var(--glass-shadow);
+  transition: border-color var(--trans-fast), transform var(--trans-fast);
+  transform: translateZ(0);
+  content-visibility: auto;
+  contain-intrinsic-size: 0 160px;
 }
 
 .book-card:hover {
@@ -3371,7 +3388,6 @@ body {
 
 .course-card {
   background: var(--bg-card);
-  backdrop-filter: blur(25px);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   padding: 18px;
@@ -3379,7 +3395,11 @@ body {
   flex-direction: column;
   justify-content: space-between;
   gap: 14px;
-  transition: all var(--trans-fast);
+  box-shadow: var(--glass-shadow);
+  transition: border-color var(--trans-fast), transform var(--trans-fast);
+  transform: translateZ(0);
+  content-visibility: auto;
+  contain-intrinsic-size: 0 140px;
 }
 
 .course-card:hover {
@@ -3458,7 +3478,6 @@ body {
 
 .calendar-frame-card {
   background: var(--bg-card);
-  backdrop-filter: blur(25px);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-lg);
   overflow: hidden;
@@ -3467,6 +3486,7 @@ body {
   flex-direction: column;
   min-height: 640px;
   position: relative;
+  transform: translateZ(0);
 }
 
 .calendar-frame-header {
@@ -3493,11 +3513,13 @@ body {
   border: none;
   background: #FFFFFF;
   filter: contrast(0.98);
+  transform: translateZ(0);
 }
 
 [data-theme="dark"] .gcal-iframe {
   filter: invert(0.88) hue-rotate(180deg) contrast(0.95);
   background: #111111;
+  transform: translateZ(0);
 }
 
 .calendar-config-banner {

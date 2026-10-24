@@ -256,6 +256,9 @@ class AudioFeedback {
       const AudioCtx = window.AudioContext || window.webkitAudioContext;
       if (AudioCtx) this.ctx = new AudioCtx();
     }
+    if (this.ctx && this.ctx.state === 'suspended') {
+      this.ctx.resume().catch(() => {});
+    }
   }
 
   playPop() {
@@ -375,7 +378,10 @@ document.addEventListener('DOMContentLoaded', () => {
     (remaining, total) => {
       const mins = Math.floor(remaining / 60);
       const secs = remaining % 60;
-      timerDigits.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      const formatted = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+      if (timerDigits.textContent !== formatted) {
+        timerDigits.textContent = formatted;
+      }
       
       const progress = (total - remaining) / total;
       const offset = circumference - (progress * circumference);
@@ -630,8 +636,16 @@ function renderAll() {
   renderWaterTracker();
   renderActivityRings();
   renderCounts();
-  renderFullHabits();
-  renderFocusSection();
+
+  const habitsView = document.getElementById('viewHabits');
+  if (habitsView && habitsView.classList.contains('active-view')) {
+    renderFullHabits();
+  }
+
+  const focusView = document.getElementById('viewFocus');
+  if (focusView && focusView.classList.contains('active-view')) {
+    renderFocusSection();
+  }
 }
 
 /**
@@ -905,14 +919,17 @@ function renderFullHabits() {
       </div>
     `;
 
-    // Click on individual day dots
+    // Click on individual day dots (Atomic DOM updates without tearing down full tree)
     card.querySelectorAll('.day-dot').forEach(dot => {
       dot.addEventListener('click', (e) => {
         e.stopPropagation();
         const dayIdx = parseInt(dot.dataset.day, 10);
         habit.completedDays[dayIdx] = !habit.completedDays[dayIdx];
+        const isNowDone = habit.completedDays[dayIdx];
+        dot.classList.toggle('active', isNowDone);
+
         if (dayIdx === habit.completedDays.length - 1) {
-          if (habit.completedDays[dayIdx]) {
+          if (isNowDone) {
             habit.streak++;
             if (!habit.history) habit.history = {};
             habit.history[getTodayString()] = true;
@@ -925,9 +942,21 @@ function renderFullHabits() {
             habit.bestStreak = habit.streak;
           }
         }
+
+        const streakBadge = card.querySelector('.habit-streak-badge');
+        if (streakBadge) streakBadge.textContent = `🔥 ${habit.streak} dias`;
+
+        const totalChecked30d = Object.values(habit.history || {}).filter(Boolean).length;
+        const rate30d = Math.min(100, Math.round((totalChecked30d / 30) * 100));
+        const rateText = card.querySelector('.habit-rate-text');
+        if (rateText) {
+          rateText.textContent = `🎯 ${rate30d}% taxa (30d) • 🏆 Recorde: ${habit.bestStreak || habit.streak}d`;
+        }
+
         sound.playPop();
         store.save();
-        renderAll();
+        renderTodayHabits();
+        renderActivityRings();
       });
     });
 
@@ -992,7 +1021,10 @@ function toggleHabitToday(id) {
 
   store.save();
   renderTodayHabits();
-  renderFullHabits();
+  const habitsView = document.getElementById('viewHabits');
+  if (habitsView && habitsView.classList.contains('active-view')) {
+    renderFullHabits();
+  }
   renderActivityRings();
 }
 
@@ -1082,6 +1114,7 @@ function switchTab(tabName) {
     renderFocusSection();
   } else if (tabName === 'habits') {
     document.getElementById('viewHabits').classList.add('active-view');
+    renderFullHabits();
   }
 }
 
