@@ -1,5 +1,7 @@
 # 🍏 Aura • Sistema de Produtividade Estilo Apple
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FMoreirabmm%2Fordem)
+
 > *"A simplicidade é o grau máximo de sofisticação."* — Steve Jobs
 
 O **Aura** é um sistema de produtividade pessoal completo, minimalista e equilibrado, construído com base nas diretrizes de design da Apple (*Human Interface Guidelines*), trazendo a fluidez do iOS e macOS diretamente para o seu navegador, sem necessidade de servidores, cadastros ou instalações complexas.
