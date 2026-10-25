@@ -262,41 +262,45 @@ class AudioFeedback {
   }
 
   playPop() {
-    try {
-      this.init();
-      if (!this.ctx) return;
-      const osc = this.ctx.createOscillator();
-      const gain = this.ctx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(580, this.ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.08);
-      gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.08);
-      osc.connect(gain);
-      gain.connect(this.ctx.destination);
-      osc.start();
-      osc.stop(this.ctx.currentTime + 0.09);
-    } catch (e) {}
-  }
-
-  playSuccessChime() {
-    try {
-      this.init();
-      if (!this.ctx) return;
-      const now = this.ctx.currentTime;
-      [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+    setTimeout(() => {
+      try {
+        this.init();
+        if (!this.ctx) return;
         const osc = this.ctx.createOscillator();
         const gain = this.ctx.createGain();
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, now + i * 0.07);
-        gain.gain.setValueAtTime(0.1, now + i * 0.07);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.35);
+        osc.frequency.setValueAtTime(580, this.ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.08);
+        gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.08);
         osc.connect(gain);
         gain.connect(this.ctx.destination);
-        osc.start(now + i * 0.07);
-        osc.stop(now + i * 0.07 + 0.36);
-      });
-    } catch (e) {}
+        osc.start();
+        osc.stop(this.ctx.currentTime + 0.09);
+      } catch (e) {}
+    }, 0);
+  }
+
+  playSuccessChime() {
+    setTimeout(() => {
+      try {
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(freq, now + i * 0.07);
+          gain.gain.setValueAtTime(0.1, now + i * 0.07);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.35);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + i * 0.07);
+          osc.stop(now + i * 0.07 + 0.36);
+        });
+      } catch (e) {}
+    }, 0);
   }
 }
 
@@ -655,11 +659,12 @@ function renderTodayHabits() {
   const container = document.getElementById('todayHabitsList');
   if (!container) return;
 
-  container.innerHTML = '';
+  const fragment = document.createDocumentFragment();
   store.state.habits.forEach(habit => {
     const isCompleted = habit.completedDays[habit.completedDays.length - 1];
     const card = document.createElement('div');
     card.className = `habit-quick-card ${isCompleted ? 'completed' : ''}`;
+    card.dataset.habitId = habit.id;
     card.innerHTML = `
       <div class="habit-check-circle">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
@@ -676,8 +681,11 @@ function renderTodayHabits() {
       toggleHabitToday(habit.id);
     });
 
-    container.appendChild(card);
+    fragment.appendChild(card);
   });
+
+  container.innerHTML = '';
+  container.appendChild(fragment);
 }
 
 /**
@@ -697,11 +705,12 @@ function renderTodayTasks(filter = 'all') {
     return;
   }
 
-  container.innerHTML = '';
+  const fragment = document.createDocumentFragment();
   filteredTasks.forEach(task => {
     const areaMeta = LIFE_AREAS[task.area] || { label: task.area, pillClass: 'pill-work' };
     const item = document.createElement('div');
     item.className = `task-item ${task.completed ? 'completed' : ''}`;
+    item.dataset.taskId = task.id;
     item.innerHTML = `
       <div class="task-check-circle" title="Marcar como concluída">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
@@ -737,8 +746,11 @@ function renderTodayTasks(filter = 'all') {
       deleteTask(task.id);
     });
 
-    container.appendChild(item);
+    fragment.appendChild(item);
   });
+
+  container.innerHTML = '';
+  container.appendChild(fragment);
 
   // Update pending badge
   const pendingCount = store.state.tasks.filter(t => !t.completed).length;
@@ -984,10 +996,20 @@ function toggleTask(id) {
     sound.playPop();
   }
   store.save();
-  renderTodayTasks();
+
+  // Fast atomic DOM update for the clicked task item
+  const taskEl = document.querySelector(`.task-item[data-task-id="${id}"]`);
+  if (taskEl) {
+    taskEl.classList.toggle('completed', task.completed);
+    const pendingCount = store.state.tasks.filter(t => !t.completed).length;
+    const badge = document.getElementById('todayPendingBadge');
+    if (badge) badge.textContent = pendingCount;
+  } else {
+    renderTodayTasks();
+  }
+
   renderActivityRings();
   renderCounts();
-  // If in area detail view, re-render it
   if (currentActiveArea) {
     renderAreaDetail(currentActiveArea);
   }
@@ -1010,8 +1032,9 @@ function toggleHabitToday(id) {
   if (!habit) return;
   const lastIndex = habit.completedDays.length - 1;
   habit.completedDays[lastIndex] = !habit.completedDays[lastIndex];
-  
-  if (habit.completedDays[lastIndex]) {
+  const isNowCompleted = habit.completedDays[lastIndex];
+
+  if (isNowCompleted) {
     habit.streak += 1;
     sound.playSuccessChime();
   } else {
@@ -1020,7 +1043,17 @@ function toggleHabitToday(id) {
   }
 
   store.save();
-  renderTodayHabits();
+
+  // Fast atomic update of the today quick card
+  const quickCard = document.querySelector(`.habit-quick-card[data-habit-id="${id}"]`);
+  if (quickCard) {
+    quickCard.classList.toggle('completed', isNowCompleted);
+    const streakEl = quickCard.querySelector('.habit-streak');
+    if (streakEl) streakEl.textContent = `🔥 ${habit.streak} dias seguidos`;
+  } else {
+    renderTodayHabits();
+  }
+
   const habitsView = document.getElementById('viewHabits');
   if (habitsView && habitsView.classList.contains('active-view')) {
     renderFullHabits();
