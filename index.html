@@ -653,6 +653,19 @@
               <button id="openNewKanbanCardBtn" class="apple-primary-btn-sm">+ Nova Demanda</button>
             </div>
 
+            <!-- Client Filter Bar -->
+            <div class="kanban-client-filter-bar" id="kanbanClientFilterContainer">
+              <span class="kanban-filter-label">
+                <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M3 21h18M3 7v14M21 7v14M6 11h2M6 15h2M16 11h2M16 15h2M10 21V3h4v18"></path>
+                </svg>
+                Clientes:
+              </span>
+              <div class="kanban-client-pills-list" id="kanbanClientPillsList">
+                <!-- Dynamically rendered client pills -->
+              </div>
+            </div>
+
             <!-- Kanban Board Grid: 4 Columns -->
             <div class="kanban-board-grid">
               
@@ -1336,9 +1349,16 @@
         </div>
         <div class="modal-options-row" style="padding: 0;">
           <div class="option-field">
+            <label for="kanbanClientInput">Cliente / Conta</label>
+            <input type="text" id="kanbanClientInput" list="kanbanClientDatalist" placeholder="Ex: Acme Corp, Banco Alfa, Interno...">
+            <datalist id="kanbanClientDatalist"></datalist>
+          </div>
+          <div class="option-field">
             <label for="kanbanProjectInput">Projeto / Categoria</label>
             <input type="text" id="kanbanProjectInput" placeholder="Ex: Produto, Design, Vendas...">
           </div>
+        </div>
+        <div class="modal-options-row" style="padding: 0;">
           <div class="option-field">
             <label for="kanbanStatusSelect">Status Inicial</label>
             <select id="kanbanStatusSelect">
@@ -1348,8 +1368,6 @@
               <option value="done">Concluído</option>
             </select>
           </div>
-        </div>
-        <div class="modal-options-row" style="padding: 0;">
           <div class="option-field">
             <label for="kanbanPrioritySelect">Prioridade</label>
             <select id="kanbanPrioritySelect">
@@ -1358,7 +1376,9 @@
               <option value="low">Baixa</option>
             </select>
           </div>
-          <div class="option-field">
+        </div>
+        <div class="modal-options-row" style="padding: 0;">
+          <div class="option-field" style="width: 100%;">
             <label for="kanbanDueInput">Prazo da Semana</label>
             <input type="text" id="kanbanDueInput" placeholder="Ex: Sexta-feira, Até 4ª, Hoje...">
           </div>

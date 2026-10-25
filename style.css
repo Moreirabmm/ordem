@@ -2724,6 +2724,122 @@ button, a, input, select, .habit-quick-card, .task-item, .day-dot, .nav-item, .m
   font-weight: 700;
 }
 
+/* Kanban Client Filter Bar */
+.kanban-client-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  overflow-x: auto;
+  padding: 4px 0;
+  scrollbar-width: none;
+}
+
+.kanban-client-filter-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.kanban-filter-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.kanban-client-pills-list {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: nowrap;
+}
+
+.kanban-client-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background var(--trans-fast), color var(--trans-fast), border-color var(--trans-fast), transform var(--trans-fast);
+}
+
+.kanban-client-filter-btn:hover {
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
+  border-color: var(--border-strong);
+}
+
+.kanban-client-filter-btn.active {
+  background: var(--accent-blue);
+  color: #ffffff;
+  border-color: var(--accent-blue);
+  box-shadow: 0 2px 8px rgba(10, 132, 255, 0.35);
+}
+
+.kanban-client-filter-btn .client-count-pill {
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  color: inherit;
+}
+
+.kanban-client-filter-btn:not(.active) .client-count-pill {
+  background: var(--bg-pill);
+  color: var(--text-tertiary);
+}
+
+/* Card Client Tag */
+.kanban-card-top-tags {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.kanban-client-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: rgba(94, 92, 230, 0.16);
+  color: #a3a1f7;
+  border: 1px solid rgba(94, 92, 230, 0.3);
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: transform var(--trans-fast), background var(--trans-fast);
+}
+
+.kanban-client-badge:hover {
+  background: rgba(94, 92, 230, 0.28);
+  transform: translateY(-1px);
+}
+
+[data-theme="light"] .kanban-client-badge {
+  background: rgba(88, 86, 214, 0.12);
+  color: #5856D6;
+  border-color: rgba(88, 86, 214, 0.25);
+}
+
 .kanban-board-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

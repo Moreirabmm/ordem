@@ -90,12 +90,12 @@ const INITIAL_DATA = {
     }
   },
   workKanban: [
-    { id: 'k1', title: 'Apresentação executiva de fechamento de trimestre', project: 'Estratégia', priority: 'high', due: 'Sexta-feira', status: 'in_progress' },
-    { id: 'k2', title: 'Alinhamento de cronograma com clientes-chave', project: 'Operações', priority: 'normal', due: 'Quinta-feira', status: 'in_progress' },
-    { id: 'k3', title: 'Mapear requisitos do novo design system', project: 'Produto', priority: 'high', due: 'Hoje', status: 'todo' },
-    { id: 'k4', title: 'Auditoria de performance e testes de usabilidade', project: 'Qualidade', priority: 'normal', due: 'Amanhã', status: 'todo' },
-    { id: 'k5', title: 'Revisão técnica de documentação e contratos', project: 'Jurídico', priority: 'low', due: 'Sexta-feira', status: 'review' },
-    { id: 'k6', title: 'Kickoff do projeto com a equipe e stakeholders', project: 'Liderança', priority: 'normal', due: 'Segunda-feira', status: 'done' }
+    { id: 'k1', title: 'Apresentação executiva de fechamento de trimestre', client: 'Acme Corp', project: 'Estratégia', priority: 'high', due: 'Sexta-feira', status: 'in_progress' },
+    { id: 'k2', title: 'Alinhamento de cronograma com clientes-chave', client: 'Banco Alfa', project: 'Operações', priority: 'normal', due: 'Quinta-feira', status: 'in_progress' },
+    { id: 'k3', title: 'Mapear requisitos do novo design system', client: 'Nexus Tech', project: 'Produto', priority: 'high', due: 'Hoje', status: 'todo' },
+    { id: 'k4', title: 'Auditoria de performance e testes de usabilidade', client: 'Acme Corp', project: 'Qualidade', priority: 'normal', due: 'Amanhã', status: 'todo' },
+    { id: 'k5', title: 'Revisão técnica de documentação e contratos', client: 'Banco Alfa', project: 'Jurídico', priority: 'low', due: 'Sexta-feira', status: 'review' },
+    { id: 'k6', title: 'Kickoff do projeto com a equipe e stakeholders', client: 'Interno', project: 'Liderança', priority: 'normal', due: 'Segunda-feira', status: 'done' }
   ],
   finance: {
     transactions: [
@@ -2130,9 +2130,66 @@ function setupRoutinesManageModal() {
 // =============================================================================
 
 const KANBAN_STATUS_FLOW = ['todo', 'in_progress', 'review', 'done'];
+let currentKanbanClientFilter = 'all';
 
 function renderWorkKanban() {
   const cards = store.state.workKanban || [];
+
+  // 1. Gather all unique clients and calculate counts per client
+  const clientCounts = {};
+  cards.forEach(c => {
+    const clientName = (c.client && c.client.trim()) ? c.client.trim() : 'Interno';
+    clientCounts[clientName] = (clientCounts[clientName] || 0) + 1;
+  });
+
+  const uniqueClients = Object.keys(clientCounts).sort();
+
+  // 2. Render client filter bar
+  const clientTabsContainer = document.getElementById('kanbanClientPillsList');
+  if (clientTabsContainer) {
+    clientTabsContainer.innerHTML = '';
+
+    // "Todos" button
+    const allBtn = document.createElement('button');
+    allBtn.className = `kanban-client-filter-btn ${currentKanbanClientFilter === 'all' ? 'active' : ''}`;
+    allBtn.innerHTML = `<span>Todos os Clientes</span><span class="client-count-pill">${cards.length}</span>`;
+    allBtn.onclick = () => {
+      sound.playPop();
+      currentKanbanClientFilter = 'all';
+      renderWorkKanban();
+    };
+    clientTabsContainer.appendChild(allBtn);
+
+    // Each client button
+    uniqueClients.forEach(clientName => {
+      const btn = document.createElement('button');
+      btn.className = `kanban-client-filter-btn ${currentKanbanClientFilter === clientName ? 'active' : ''}`;
+      btn.innerHTML = `<span>🏢 ${escapeHtml(clientName)}</span><span class="client-count-pill">${clientCounts[clientName]}</span>`;
+      btn.onclick = () => {
+        sound.playPop();
+        currentKanbanClientFilter = (currentKanbanClientFilter === clientName) ? 'all' : clientName;
+        renderWorkKanban();
+      };
+      clientTabsContainer.appendChild(btn);
+    });
+  }
+
+  // 3. Populate datalist for new card modal autocomplete
+  const datalistEl = document.getElementById('kanbanClientDatalist');
+  if (datalistEl) {
+    datalistEl.innerHTML = '';
+    const datalistOptions = ['Interno', ...uniqueClients.filter(c => c !== 'Interno')];
+    datalistOptions.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c;
+      datalistEl.appendChild(opt);
+    });
+  }
+
+  // 4. Filter visible cards
+  const visibleCards = (currentKanbanClientFilter === 'all')
+    ? cards
+    : cards.filter(c => ((c.client && c.client.trim()) ? c.client.trim() : 'Interno') === currentKanbanClientFilter);
 
   const cols = {
     todo: document.getElementById('kanbanCardsTodo'),
@@ -2148,12 +2205,13 @@ function renderWorkKanban() {
     if (cols[status]) cols[status].innerHTML = '';
   });
 
-  cards.forEach(card => {
+  visibleCards.forEach(card => {
     const colStatus = card.status || 'todo';
     if (counts[colStatus] !== undefined) {
       counts[colStatus]++;
     }
 
+    const cardClient = (card.client && card.client.trim()) ? card.client.trim() : 'Interno';
     const cardEl = document.createElement('div');
     cardEl.className = 'kanban-card';
     cardEl.draggable = true;
@@ -2165,9 +2223,17 @@ function renderWorkKanban() {
     const canMoveRight = currentIdx < KANBAN_STATUS_FLOW.length - 1;
 
     cardEl.innerHTML = `
+      <div class="kanban-card-top-tags">
+        <span class="kanban-client-badge" title="Filtrar por ${escapeHtml(cardClient)}">
+          <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M3 21h18M3 7v14M21 7v14M6 11h2M6 15h2M16 11h2M16 15h2M10 21V3h4v18"></path>
+          </svg>
+          ${escapeHtml(cardClient)}
+        </span>
+        <span class="kanban-project-pill">${escapeHtml(card.project || 'Geral')}</span>
+      </div>
       <div class="kanban-card-title">${escapeHtml(card.title)}</div>
       <div class="kanban-card-meta">
-        <span class="kanban-project-pill">${escapeHtml(card.project || 'Geral')}</span>
         ${card.priority === 'high' ? '<span class="task-priority-high">Alta 🔥</span>' : ''}
         <span class="kanban-due-tag">📅 ${escapeHtml(card.due || 'Semana')}</span>
       </div>
@@ -2184,6 +2250,17 @@ function renderWorkKanban() {
         </button>
       </div>
     `;
+
+    // Click client badge to filter by client
+    const clientBadge = cardEl.querySelector('.kanban-client-badge');
+    if (clientBadge) {
+      clientBadge.onclick = (e) => {
+        e.stopPropagation();
+        sound.playPop();
+        currentKanbanClientFilter = cardClient;
+        renderWorkKanban();
+      };
+    }
 
     // Quick move left
     if (canMoveLeft) {
@@ -2304,6 +2381,7 @@ function setupKanbanModals() {
   const saveBtn = document.getElementById('saveKanbanBtn');
 
   const titleInput = document.getElementById('kanbanTitleInput');
+  const clientInput = document.getElementById('kanbanClientInput');
   const projectInput = document.getElementById('kanbanProjectInput');
   const statusSelect = document.getElementById('kanbanStatusSelect');
   const prioritySelect = document.getElementById('kanbanPrioritySelect');
@@ -2312,6 +2390,9 @@ function setupKanbanModals() {
   const openModalForStatus = (status = 'todo') => {
     sound.playPop();
     if (statusSelect) statusSelect.value = status;
+    if (clientInput) {
+      clientInput.value = (currentKanbanClientFilter !== 'all') ? currentKanbanClientFilter : '';
+    }
     openModal('newKanbanCardModal');
     setTimeout(() => {
       if (titleInput) titleInput.focus();
@@ -2337,6 +2418,7 @@ function setupKanbanModals() {
       const title = titleInput.value.trim();
       if (!title) return;
 
+      const client = clientInput ? clientInput.value.trim() : '';
       const project = projectInput.value.trim() || 'Geral';
       const status = statusSelect.value;
       const priority = prioritySelect.value;
@@ -2347,6 +2429,7 @@ function setupKanbanModals() {
       store.state.workKanban.unshift({
         id: 'k_' + Date.now(),
         title: title,
+        client: client || 'Interno',
         project: project,
         status: status,
         priority: priority,
@@ -2354,6 +2437,7 @@ function setupKanbanModals() {
       });
 
       titleInput.value = '';
+      if (clientInput) clientInput.value = '';
       projectInput.value = '';
       dueInput.value = '';
       store.save();
