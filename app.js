@@ -168,12 +168,140 @@ const LIFE_AREAS = {
 };
 
 // =============================================================================
-// 2. STATE MANAGER & PERSISTÊNCIA
+// 2. STATE MANAGER & PERSISTÊNCIA MULTIUSUÁRIO
 // =============================================================================
+
+function getEmptyUserData() {
+  return {
+    theme: 'dark',
+    water: 0,
+    waterGoal: 2500,
+    tasks: [],
+    habits: [],
+    health: {
+      nutrition: {
+        calorieGoal: 2200,
+        currentCalories: 0,
+        proteinGoal: 150,
+        currentProtein: 0,
+        carbGoal: 220,
+        currentCarb: 0,
+        fatGoal: 65,
+        currentFat: 0,
+        meals: []
+      },
+      workout: {
+        activeRoutine: '',
+        routines: [],
+        exercises: []
+      },
+      running: {
+        weeklyGoalKm: 20,
+        currentWeeklyKm: 0,
+        sessions: []
+      }
+    },
+    workKanban: [],
+    finance: {
+      transactions: []
+    },
+    knowledge: {
+      books: [],
+      courses: []
+    },
+    calendar: {
+      googleCalendarId: '',
+      viewMode: 'WEEK',
+      events: []
+    },
+    focus: {
+      activeTaskId: null,
+      tasks: [],
+      sessions: []
+    },
+    mindsetQuotes: [
+      '"A simplicidade é o grau máximo de sofisticação." — Steve Jobs',
+      '"Foco significa dizer não a centenas de outras boas ideias." — Steve Jobs',
+      '"Faça o que importa hoje. O resto é ruído." — Marco Aurélio',
+      '"Pequenos hábitos diários produzem transformações extraordinárias."',
+      '"A consistência bate a intensidade no longo prazo."'
+    ]
+  };
+}
+
+class UserManager {
+  static ACTIVE_USER_KEY = 'aura_active_user';
+  static USERS_LIST_KEY = 'aura_users_list';
+
+  static getActiveUser() {
+    try {
+      const data = localStorage.getItem(this.ACTIVE_USER_KEY);
+      return data ? JSON.parse(data) : null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  static setActiveUser(user) {
+    if (!user || !user.email) return null;
+    const cleanEmail = user.email.toLowerCase().trim();
+    const cleanUser = {
+      id: user.id || 'usr_' + Date.now(),
+      email: cleanEmail,
+      name: user.name || cleanEmail.split('@')[0],
+      picture: user.picture || '',
+      provider: user.provider || 'google',
+      lastLogin: new Date().toISOString()
+    };
+    try {
+      localStorage.setItem(this.ACTIVE_USER_KEY, JSON.stringify(cleanUser));
+      this.saveToUsersList(cleanUser);
+    } catch (e) {
+      console.error('Erro ao salvar usuário ativo:', e);
+    }
+    return cleanUser;
+  }
+
+  static getUsersList() {
+    try {
+      const data = localStorage.getItem(this.USERS_LIST_KEY);
+      return data ? JSON.parse(data) : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  static saveToUsersList(user) {
+    let list = this.getUsersList();
+    list = list.filter(u => u.email !== user.email);
+    list.unshift(user);
+    try {
+      localStorage.setItem(this.USERS_LIST_KEY, JSON.stringify(list));
+    } catch (e) {}
+  }
+
+  static logout() {
+    try {
+      localStorage.removeItem(this.ACTIVE_USER_KEY);
+    } catch (e) {}
+  }
+
+  static getStorageKey(user) {
+    if (!user || !user.email) return 'aura_user_guest';
+    return 'aura_user_' + encodeURIComponent(user.email.toLowerCase().trim());
+  }
+}
 
 class Store {
   constructor() {
-    this.storageKey = 'aura_productivity_v1';
+    this.currentUser = UserManager.getActiveUser();
+    this.storageKey = UserManager.getStorageKey(this.currentUser);
+    this.state = this.loadState();
+  }
+
+  setUser(user) {
+    this.currentUser = user;
+    this.storageKey = UserManager.getStorageKey(user);
     this.state = this.loadState();
   }
 
@@ -182,34 +310,30 @@ class Store {
       const saved = localStorage.getItem(this.storageKey);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (!parsed.health) {
-          parsed.health = JSON.parse(JSON.stringify(INITIAL_DATA.health));
-        }
-        if (parsed.health && parsed.health.workout && Array.isArray(parsed.health.workout.routines)) {
-          if (typeof parsed.health.workout.routines[0] === 'string') {
-            const defaultDays = ['Segunda & Quinta', 'Terça & Sexta', 'Quarta & Sábado', 'Finais de Semana', 'Dias Flexíveis'];
-            parsed.health.workout.routines = parsed.health.workout.routines.map((r, i) => ({
-              id: 'r_' + (i + 1),
-              name: r,
-              days: defaultDays[i] || 'Dias flexíveis'
-            }));
-          }
-        }
-        if (!parsed.workKanban) {
-          parsed.workKanban = JSON.parse(JSON.stringify(INITIAL_DATA.workKanban));
-        }
-        if (!parsed.finance || !parsed.finance.transactions) {
-          parsed.finance = JSON.parse(JSON.stringify(INITIAL_DATA.finance));
-        }
-        if (!parsed.knowledge || !parsed.knowledge.books) {
-          parsed.knowledge = JSON.parse(JSON.stringify(INITIAL_DATA.knowledge));
-        }
-        if (!parsed.calendar || !parsed.calendar.events) {
-          parsed.calendar = JSON.parse(JSON.stringify(INITIAL_DATA.calendar));
-        }
-        if (!parsed.focus || !parsed.focus.tasks) {
-          parsed.focus = JSON.parse(JSON.stringify(INITIAL_DATA.focus));
-        }
+        if (!parsed.health) parsed.health = { nutrition: { meals: [] }, workout: { routines: [], exercises: [] }, running: { weeklyGoalKm: 20, currentWeeklyKm: 0, sessions: [] } };
+        if (!parsed.health.nutrition) parsed.health.nutrition = { calorieGoal: 2200, currentCalories: 0, proteinGoal: 150, currentProtein: 0, carbGoal: 220, currentCarb: 0, fatGoal: 65, currentFat: 0, meals: [] };
+        if (!Array.isArray(parsed.health.nutrition.meals)) parsed.health.nutrition.meals = [];
+        if (!parsed.health.workout) parsed.health.workout = { activeRoutine: '', routines: [], exercises: [] };
+        if (!Array.isArray(parsed.health.workout.routines)) parsed.health.workout.routines = [];
+        if (!Array.isArray(parsed.health.workout.exercises)) parsed.health.workout.exercises = [];
+        if (!parsed.health.running) parsed.health.running = { weeklyGoalKm: 20, currentWeeklyKm: 0, sessions: [] };
+        if (!Array.isArray(parsed.health.running.sessions)) parsed.health.running.sessions = [];
+        if (!Array.isArray(parsed.workKanban)) parsed.workKanban = [];
+        if (!parsed.finance) parsed.finance = { transactions: [] };
+        if (!Array.isArray(parsed.finance.transactions)) parsed.finance.transactions = [];
+        if (!parsed.knowledge) parsed.knowledge = { books: [], courses: [] };
+        if (!Array.isArray(parsed.knowledge.books)) parsed.knowledge.books = [];
+        if (!Array.isArray(parsed.knowledge.courses)) parsed.knowledge.courses = [];
+        if (!parsed.calendar) parsed.calendar = { googleCalendarId: '', viewMode: 'WEEK', events: [] };
+        if (!Array.isArray(parsed.calendar.events)) parsed.calendar.events = [];
+        if (!parsed.focus) parsed.focus = { tasks: [], sessions: [], activeTaskId: null };
+        if (!Array.isArray(parsed.focus.tasks)) parsed.focus.tasks = [];
+        if (!Array.isArray(parsed.focus.sessions)) parsed.focus.sessions = [];
+        if (!Array.isArray(parsed.tasks)) parsed.tasks = [];
+        if (!Array.isArray(parsed.habits)) parsed.habits = [];
+        if (parsed.water === undefined) parsed.water = 0;
+        if (!parsed.waterGoal) parsed.waterGoal = 2500;
+        if (!parsed.theme) parsed.theme = 'dark';
         if (parsed.habits && Array.isArray(parsed.habits)) {
           parsed.habits.forEach(h => {
             if (!h.bestStreak) h.bestStreak = Math.max(h.streak || 0, Math.round((h.streak || 0) * 1.5) || 7);
@@ -223,7 +347,12 @@ class Store {
     } catch (e) {
       console.warn('Erro ao carregar dados do localStorage:', e);
     }
-    return JSON.parse(JSON.stringify(INITIAL_DATA));
+    // New user entering -> clean/zerado initial state as requested!
+    const cleanState = getEmptyUserData();
+    try {
+      localStorage.setItem(this.storageKey, JSON.stringify(cleanState));
+    } catch (e) {}
+    return cleanState;
   }
 
   save() {
@@ -235,6 +364,11 @@ class Store {
   }
 
   reset() {
+    this.state = getEmptyUserData();
+    this.save();
+  }
+
+  loadDemoData() {
     this.state = JSON.parse(JSON.stringify(INITIAL_DATA));
     this.save();
   }
@@ -512,11 +646,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Render initial interface
-  renderAll();
-
   // Event Listeners: Navigation Tabs
   setupNavigation();
+
+  // Event Listeners: Google Authentication & Account Management
+  setupAuthEvents();
+  setupUserAccountModalEvents();
+
+  // Initialize Authentication & User Partition
+  initAuthSystem();
 
   // Event Listeners: Quick Capture Modal
   setupQuickCaptureModal();
@@ -625,6 +763,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     // ESC to close any open modal
     if (e.key === 'Escape') {
+      if (!UserManager.getActiveUser()) return;
       closeAllModals();
     }
   });
@@ -659,9 +798,19 @@ function renderTodayHabits() {
   const container = document.getElementById('todayHabitsList');
   if (!container) return;
 
+  const habits = store.state.habits || [];
+  if (habits.length === 0) {
+    container.innerHTML = `
+      <div style="padding: 12px 16px; background: var(--bg-card); border: 1px dashed var(--border-subtle); border-radius: var(--radius-md); font-size: 12px; color: var(--text-tertiary); display: flex; align-items: center; gap: 8px;">
+        <span>🌱 Nenhum hábito diário cadastrado ainda. Use "+ Novo Hábito" acima para registrar seus rituais.</span>
+      </div>
+    `;
+    return;
+  }
+
   const fragment = document.createDocumentFragment();
-  store.state.habits.forEach(habit => {
-    const isCompleted = habit.completedDays[habit.completedDays.length - 1];
+  habits.forEach(habit => {
+    const isCompleted = habit.completedDays && habit.completedDays[habit.completedDays.length - 1];
     const card = document.createElement('div');
     card.className = `habit-quick-card ${isCompleted ? 'completed' : ''}`;
     card.dataset.habitId = habit.id;
@@ -673,7 +822,7 @@ function renderTodayHabits() {
       </div>
       <div class="habit-info">
         <span class="habit-name">${escapeHtml(habit.title)}</span>
-        <span class="habit-streak">🔥 ${habit.streak} dias seguidos</span>
+        <span class="habit-streak">🔥 ${habit.streak || 0} dias seguidos</span>
       </div>
     `;
 
@@ -777,20 +926,20 @@ function renderWaterTracker() {
  */
 function renderActivityRings() {
   // 1. Ring Work: percentage of work tasks done
-  const workTasks = store.state.tasks.filter(t => t.area === 'work');
+  const workTasks = store.state.tasks ? store.state.tasks.filter(t => t.area === 'work') : [];
   const workDone = workTasks.filter(t => t.completed).length;
-  const workPct = workTasks.length ? Math.round((workDone / workTasks.length) * 100) : 100;
+  const workPct = workTasks.length ? Math.round((workDone / workTasks.length) * 100) : 0;
 
   // 2. Ring Health: water intake + health tasks completed
-  const healthTasks = store.state.tasks.filter(t => t.area === 'health');
+  const healthTasks = store.state.tasks ? store.state.tasks.filter(t => t.area === 'health') : [];
   const healthDone = healthTasks.filter(t => t.completed).length;
-  const waterPct = Math.min(100, Math.round((store.state.water / store.state.waterGoal) * 100));
+  const waterPct = Math.min(100, Math.round(((store.state.water || 0) / (store.state.waterGoal || 2500)) * 100));
   const healthPct = healthTasks.length ? Math.round((waterPct + ((healthDone / healthTasks.length) * 100)) / 2) : waterPct;
 
   // 3. Ring Habits: today's completed habits
-  const totalHabits = store.state.habits.length;
-  const habitsDone = store.state.habits.filter(h => h.completedDays[h.completedDays.length - 1]).length;
-  const habitsPct = totalHabits ? Math.round((habitsDone / totalHabits) * 100) : 100;
+  const totalHabits = store.state.habits ? store.state.habits.length : 0;
+  const habitsDone = store.state.habits ? store.state.habits.filter(h => h.completedDays && h.completedDays[h.completedDays.length - 1]).length : 0;
+  const habitsPct = totalHabits ? Math.round((habitsDone / totalHabits) * 100) : 0;
 
   // Update text values
   document.getElementById('ringWorkVal').textContent = `${workPct}%`;
@@ -819,7 +968,7 @@ function renderActivityRings() {
   // Summary pill
   const summary = document.getElementById('daySummaryText');
   if (summary) {
-    summary.textContent = `${habitsDone} de ${totalHabits} hábitos concluídos`;
+    summary.textContent = totalHabits > 0 ? `${habitsDone} de ${totalHabits} hábitos concluídos` : '0 hábitos cadastrados';
   }
 }
 
@@ -858,7 +1007,7 @@ function renderFullHabits() {
   const bestStreakEl = document.getElementById('habitsBestStreakOverallVal');
   const bestStreakSub = document.getElementById('habitsBestStreakNameSub');
 
-  const todayCompleted = habits.filter(h => h.completedDays[h.completedDays.length - 1]).length;
+  const todayCompleted = habits.filter(h => h.completedDays && h.completedDays[h.completedDays.length - 1]).length;
   const todayPct = habits.length ? Math.round((todayCompleted / habits.length) * 100) : 0;
 
   let total30dRatesSum = 0;
@@ -890,6 +1039,24 @@ function renderFullHabits() {
   if (avgRateEl) avgRateEl.textContent = `${avg30dRate}%`;
   if (bestStreakEl) bestStreakEl.textContent = `${bestStreakOverall} dias`;
   if (bestStreakSub) bestStreakSub.textContent = `Recorde: ${bestHabitName}`;
+
+  if (habits.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state" style="grid-column: 1 / -1; padding: 3rem 1.5rem; text-align: center;">
+        <div style="font-size: 2rem; margin-bottom: 0.75rem;">🌱</div>
+        <h4 style="font-size: 1.1rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">Nenhum hábito cadastrado</h4>
+        <p style="color: var(--text-secondary); max-width: 420px; margin: 0 auto 1.25rem; font-size: 0.9rem;">
+          Construa consistência dia após dia. Cadastre seu primeiro hábito para acompanhar sua evolução e gráficos diários.
+        </p>
+        <button class="apple-primary-btn" id="emptyStateAddHabitBtn" style="margin: 0 auto;">
+          <span>+ Criar Primeiro Hábito</span>
+        </button>
+      </div>
+    `;
+    const emptyBtn = document.getElementById('emptyStateAddHabitBtn');
+    if (emptyBtn) emptyBtn.addEventListener('click', () => openModal('newHabitModal'));
+    return;
+  }
 
   const dayLabels = ['Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb', 'Dom'];
 
@@ -3209,8 +3376,296 @@ function openModal(modalId) {
   }
 }
 
+function closeModal(modalId) {
+  const modal = document.getElementById(modalId);
+  if (modal) {
+    if (modalId === 'authModal' && !UserManager.getActiveUser()) return;
+    modal.classList.remove('open');
+  }
+}
+
 function closeAllModals() {
-  document.querySelectorAll('.modal-backdrop').forEach(m => m.classList.remove('open'));
+  document.querySelectorAll('.modal-backdrop').forEach(m => {
+    if (m.id === 'authModal' && !UserManager.getActiveUser()) {
+      return;
+    }
+    m.classList.remove('open');
+  });
+}
+
+// Close modals when clicking backdrop (except unauthenticated authModal)
+document.addEventListener('click', (e) => {
+  if (e.target && e.target.classList && e.target.classList.contains('modal-backdrop')) {
+    if (e.target.id === 'authModal' && !UserManager.getActiveUser()) return;
+    e.target.classList.remove('open');
+  }
+});
+
+// =============================================================================
+// 9.5 GOOGLE AUTHENTICATION & MULTI-USER SYSTEM
+// =============================================================================
+
+function parseJwt(token) {
+  try {
+    const base64Url = token.split('.')[1];
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join('')
+    );
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    console.error('Erro ao decodificar JWT Google:', e);
+    return null;
+  }
+}
+
+function handleGoogleCredentialResponse(response) {
+  if (!response || !response.credential) return;
+  const payload = parseJwt(response.credential);
+  if (payload && payload.email) {
+    loginUser({
+      id: payload.sub,
+      name: payload.name || payload.email.split('@')[0],
+      email: payload.email,
+      picture: payload.picture || '',
+      provider: 'google'
+    });
+  }
+}
+
+function initGoogleIdentity() {
+  if (typeof google === 'undefined' || !google.accounts || !google.accounts.id) {
+    setTimeout(() => {
+      if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+        initGoogleIdentity();
+      }
+    }, 1200);
+    return;
+  }
+  const clientId = window.AURA_GOOGLE_CLIENT_ID || localStorage.getItem('aura_google_client_id') || '';
+  if (clientId) {
+    try {
+      google.accounts.id.initialize({
+        client_id: clientId,
+        callback: handleGoogleCredentialResponse,
+        auto_select: false,
+        cancel_on_tap_outside: true
+      });
+      const gsiContainer = document.getElementById('gsiButtonContainer');
+      if (gsiContainer) {
+        google.accounts.id.renderButton(gsiContainer, {
+          theme: 'filled_blue',
+          size: 'large',
+          shape: 'pill',
+          text: 'signin_with',
+          locale: 'pt-BR'
+        });
+      }
+    } catch (e) {
+      console.warn('GSI init notice:', e);
+    }
+  }
+}
+
+function initAuthSystem() {
+  const activeUser = UserManager.getActiveUser();
+  if (activeUser) {
+    store.setUser(activeUser);
+    updateUserProfileUI();
+    renderAll();
+  } else {
+    openModal('authModal');
+    renderSavedAccountsList();
+    renderAll();
+  }
+  initGoogleIdentity();
+}
+
+function loginUser(userData) {
+  const user = UserManager.setActiveUser(userData);
+  if (!user) return;
+  store.setUser(user);
+  applyTheme(store.state.theme);
+
+  const authModal = document.getElementById('authModal');
+  if (authModal) authModal.classList.remove('open');
+
+  updateUserProfileUI();
+  sound.playSuccessChime();
+  renderAll();
+
+  if (currentActiveArea) {
+    renderAreaDetail(currentActiveArea);
+  }
+}
+
+function updateUserProfileUI() {
+  const user = UserManager.getActiveUser();
+  const userNameEls = [
+    document.getElementById('sidebarUserName'),
+    document.getElementById('settingsActiveUserName'),
+    document.getElementById('accountModalName')
+  ];
+  const userEmailEls = [
+    document.getElementById('sidebarUserEmail'),
+    document.getElementById('settingsActiveUserEmail'),
+    document.getElementById('accountModalEmail')
+  ];
+  const sidebarAvatar = document.getElementById('sidebarUserAvatar');
+  const mobileAvatar = document.getElementById('mobileUserAvatar');
+  const accountAvatar = document.getElementById('accountModalAvatar');
+  const dbKeyEl = document.getElementById('accountDbKey');
+
+  if (user) {
+    userNameEls.forEach(el => { if (el) el.textContent = user.name; });
+    userEmailEls.forEach(el => { if (el) el.textContent = user.email; });
+
+    const initial = (user.name || user.email || 'U').charAt(0).toUpperCase();
+    const avatarContent = user.picture ? `<img src="${user.picture}" alt="${user.name}">` : initial;
+
+    if (sidebarAvatar) sidebarAvatar.innerHTML = avatarContent;
+    if (mobileAvatar) mobileAvatar.innerHTML = avatarContent;
+    if (accountAvatar) accountAvatar.innerHTML = avatarContent;
+    if (dbKeyEl) dbKeyEl.textContent = store.storageKey;
+
+    const statTasks = document.getElementById('accountStatTasks');
+    const statHabits = document.getElementById('accountStatHabits');
+    const statFocus = document.getElementById('accountStatFocus');
+
+    if (statTasks) statTasks.textContent = store.state.tasks ? store.state.tasks.length : 0;
+    if (statHabits) statHabits.textContent = store.state.habits ? store.state.habits.length : 0;
+    if (statFocus) {
+      let totalMins = 0;
+      if (store.state.focus && Array.isArray(store.state.focus.sessions)) {
+        totalMins = store.state.focus.sessions.reduce((acc, s) => acc + (s.durationMinutes || 0), 0);
+      }
+      const hours = Math.round((totalMins / 60) * 10) / 10;
+      statFocus.textContent = hours > 0 ? `${hours}h` : `${totalMins}m`;
+    }
+  } else {
+    userNameEls.forEach(el => { if (el) el.textContent = 'Não conectado'; });
+    userEmailEls.forEach(el => { if (el) el.textContent = 'Clique para entrar'; });
+    if (sidebarAvatar) sidebarAvatar.textContent = 'G';
+    if (mobileAvatar) mobileAvatar.textContent = 'G';
+  }
+}
+
+function renderSavedAccountsList() {
+  const listContainer = document.getElementById('savedAccountsList');
+  const section = document.getElementById('savedAccountsSection');
+  if (!listContainer || !section) return;
+
+  const accounts = UserManager.getUsersList();
+  if (accounts.length === 0) {
+    section.classList.add('hidden');
+    return;
+  }
+
+  section.classList.remove('hidden');
+  listContainer.innerHTML = '';
+
+  accounts.forEach(acc => {
+    const item = document.createElement('div');
+    item.className = 'saved-account-item';
+    const initial = (acc.name || acc.email || 'U').charAt(0).toUpperCase();
+    const avatarInner = acc.picture ? `<img src="${acc.picture}" alt="${acc.name}">` : initial;
+
+    item.innerHTML = `
+      <div class="saved-account-avatar">${avatarInner}</div>
+      <div class="saved-account-info">
+        <span class="saved-account-name">${escapeHtml(acc.name)}</span>
+        <span class="saved-account-email">${escapeHtml(acc.email)}</span>
+      </div>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14" style="color: var(--text-tertiary);">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    `;
+
+    item.addEventListener('click', () => {
+      loginUser(acc);
+    });
+
+    listContainer.appendChild(item);
+  });
+}
+
+function setupAuthEvents() {
+  const directForm = document.getElementById('directLoginForm');
+  const googleBtn = document.getElementById('googleLoginActionBtn');
+  const emailInput = document.getElementById('userEmailInput');
+  const nameInput = document.getElementById('userNameInput');
+
+  if (directForm) {
+    directForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = emailInput ? emailInput.value.trim() : '';
+      if (!email) return;
+      const name = nameInput && nameInput.value.trim() ? nameInput.value.trim() : email.split('@')[0];
+
+      loginUser({
+        email: email,
+        name: name,
+        provider: 'google'
+      });
+    });
+  }
+
+  if (googleBtn) {
+    googleBtn.addEventListener('click', () => {
+      sound.playPop();
+      if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
+        try {
+          google.accounts.id.prompt();
+        } catch (e) {}
+      }
+      if (emailInput) {
+        emailInput.focus();
+      }
+    });
+  }
+}
+
+function setupUserAccountModalEvents() {
+  const sidebarBtn = document.getElementById('sidebarUserProfileBtn');
+  const mobileBtn = document.getElementById('mobileUserProfileBtn');
+  const closeBtn = document.getElementById('closeUserAccountModal');
+  const switchBtn = document.getElementById('switchUserBtn');
+  const logoutBtn = document.getElementById('logoutUserBtn');
+
+  const openAccount = () => {
+    sound.playPop();
+    updateUserProfileUI();
+    openModal('userAccountModal');
+  };
+
+  if (sidebarBtn) sidebarBtn.addEventListener('click', openAccount);
+  if (mobileBtn) mobileBtn.addEventListener('click', openAccount);
+  if (closeBtn) closeBtn.addEventListener('click', () => closeAllModals());
+
+  if (switchBtn) {
+    switchBtn.addEventListener('click', () => {
+      sound.playPop();
+      closeAllModals();
+      openModal('authModal');
+      renderSavedAccountsList();
+    });
+  }
+
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', () => {
+      if (confirm('Deseja sair da sua conta Google atual? Seus dados continuam salvos com segurança neste navegador.')) {
+        sound.playPop();
+        UserManager.logout();
+        updateUserProfileUI();
+        closeAllModals();
+        openModal('authModal');
+        renderSavedAccountsList();
+      }
+    });
+  }
 }
 
 function setupQuickCaptureModal() {
@@ -3555,13 +4010,37 @@ function setupSettingsModal() {
   // Reset to demo data
   if (resetBtn) {
     resetBtn.addEventListener('click', () => {
-      if (confirm('Deseja resetar para os dados originais de demonstração?')) {
+      if (confirm('Deseja carregar os dados de demonstração (tarefas, hábitos e exemplos)?')) {
+        store.loadDemoData();
+        applyTheme(store.state.theme);
+        renderAll();
+        sound.playPop();
+        closeAllModals();
+      }
+    });
+  }
+
+  // Clear current user data completely (zerar)
+  const clearBtn = document.getElementById('settingsClearUserDataBtn');
+  if (clearBtn) {
+    clearBtn.addEventListener('click', () => {
+      if (confirm('Tem certeza que deseja zerar todos os dados desta conta? Todas as áreas ficarão limpas.')) {
         store.reset();
         applyTheme(store.state.theme);
         renderAll();
         sound.playPop();
         closeAllModals();
       }
+    });
+  }
+
+  // Switch account button in settings
+  const switchAccBtn = document.getElementById('settingsSwitchAccountBtn');
+  if (switchAccBtn) {
+    switchAccBtn.addEventListener('click', () => {
+      closeAllModals();
+      openModal('authModal');
+      renderSavedAccountsList();
     });
   }
 }
