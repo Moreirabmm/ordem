@@ -2096,30 +2096,115 @@ button, a, input, select, .habit-quick-card, .task-item, .day-dot, .nav-item, .m
   color: var(--text-secondary);
 }
 
+/* ==========================================================================
+   Apple-styled Premium Form Controls (Inputs, Selects & Textareas)
+   ========================================================================== */
+.apple-input,
 .option-field select,
+.option-field input,
+.option-field textarea,
 .form-group select,
-.form-group input {
+.form-group input,
+.form-group textarea {
   width: 100%;
   background: var(--bg-pill);
   border: 1px solid var(--border-subtle);
   color: var(--text-primary);
-  padding: 10px 12px;
+  padding: 10px 14px;
   border-radius: var(--radius-sm);
-  font-size: 13px;
+  font-size: 13.5px;
   font-family: inherit;
   outline: none;
+  transition: border-color var(--trans-fast), background var(--trans-fast), box-shadow var(--trans-fast);
+  box-sizing: border-box;
+}
+
+.apple-input::placeholder,
+.option-field input::placeholder,
+.option-field textarea::placeholder,
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: var(--text-tertiary);
+  opacity: 0.75;
+}
+
+.apple-input:hover,
+.option-field select:hover,
+.option-field input:hover,
+.option-field textarea:hover,
+.form-group select:hover,
+.form-group input:hover,
+.form-group textarea:hover {
+  background: var(--bg-pill-hover);
+  border-color: var(--border-strong);
+}
+
+.apple-input:focus,
+.option-field select:focus,
+.option-field input:focus,
+.option-field textarea:focus,
+.form-group select:focus,
+.form-group input:focus,
+.form-group textarea:focus {
+  border-color: var(--accent-blue);
+  background: rgba(10, 132, 255, 0.08);
+  box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.25);
+}
+
+/* Select specific styling with Apple chevron */
+.option-field select,
+.form-group select,
+select.apple-input {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='rgba(235, 235, 245, 0.65)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
+  cursor: pointer;
 }
 
 .option-field select option,
-.form-group select option {
+.form-group select option,
+select.apple-input option {
   background: #1C1C1E;
   color: #FFFFFF;
+  padding: 8px;
+}
+
+[data-theme="light"] .option-field select,
+[data-theme="light"] .form-group select,
+[data-theme="light"] select.apple-input {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='rgba(0, 0, 0, 0.6)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
 }
 
 [data-theme="light"] .option-field select option,
-[data-theme="light"] .form-group select option {
+[data-theme="light"] .form-group select option,
+[data-theme="light"] select.apple-input option {
   background: #FFFFFF;
   color: #000000;
+}
+
+/* Textarea specific styling */
+.option-field textarea,
+.form-group textarea,
+textarea.apple-input {
+  min-height: 88px;
+  line-height: 1.55;
+  resize: vertical;
+}
+
+.option-field textarea::-webkit-scrollbar,
+.form-group textarea::-webkit-scrollbar,
+textarea.apple-input::-webkit-scrollbar {
+  width: 6px;
+}
+
+.option-field textarea::-webkit-scrollbar-thumb,
+.form-group textarea::-webkit-scrollbar-thumb,
+textarea.apple-input::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
 }
 
 .modal-body-fields {
@@ -5253,3 +5338,146 @@ button, a, input, select, .habit-quick-card, .task-item, .day-dot, .nav-item, .m
 
 
 
+
+/* ==========================================================================
+   Firebase Cloud Sync & Status Badges
+   ========================================================================== */
+.cloud-sync-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  font-size: 11.5px;
+  font-weight: 500;
+  background: var(--bg-pill);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.cloud-sync-badge .status-indicator-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-tertiary);
+}
+
+.cloud-sync-badge.status-ready .status-indicator-dot,
+.cloud-sync-badge.status-synced .status-indicator-dot {
+  background: #34C759;
+  box-shadow: 0 0 8px rgba(52, 199, 89, 0.6);
+}
+
+.cloud-sync-badge.status-syncing .status-indicator-dot {
+  background: #0A84FF;
+  animation: pulse-sync 1s infinite alternate;
+}
+
+@keyframes pulse-sync {
+  0% { transform: scale(0.85); opacity: 0.6; }
+  100% { transform: scale(1.3); opacity: 1; }
+}
+
+.cloud-sync-badge.status-offline .status-indicator-dot {
+  background: #8E8E93;
+}
+
+.cloud-sync-badge.status-error .status-indicator-dot {
+  background: #FF453A;
+  box-shadow: 0 0 8px rgba(255, 69, 58, 0.6);
+}
+
+.firebase-config-card {
+  max-width: 540px;
+  width: 92%;
+  padding: 28px 24px;
+}
+
+.firebase-step-box {
+  background: var(--bg-pill);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.firebase-step-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.firebase-step-item:last-child {
+  margin-bottom: 0;
+}
+
+.firebase-step-num {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent-blue);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.firebase-step-item a {
+  color: var(--accent-blue);
+  text-decoration: underline;
+  font-weight: 600;
+}
+
+.firebase-config-textarea {
+  width: 100%;
+  height: 140px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  color: #34C759;
+  resize: vertical;
+}
+
+.account-backup-box {
+  background: var(--bg-pill);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  margin-top: 14px;
+  text-align: left;
+}
+
+.account-backup-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.account-backup-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
+
+.account-backup-btns {
+  display: flex;
+  gap: 10px;
+}

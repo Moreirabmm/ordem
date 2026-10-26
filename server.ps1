@@ -1,5 +1,5 @@
 $port = 8080
-$folder = "C:\Users\guimo\.gemini\antigravity\scratch\apple-productivity-system"
+$folder = if ($PSScriptRoot) { $PSScriptRoot } else { (Get-Location).Path }
 
 $listener = New-Object System.Net.HttpListener
 $listener.Prefixes.Add("http://localhost:" + $port + "/")

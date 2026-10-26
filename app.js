@@ -425,6 +425,9 @@ class UserManager {
     try {
       localStorage.removeItem(this.ACTIVE_USER_KEY);
     } catch (e) {}
+    if (typeof FirebaseService !== 'undefined') {
+      FirebaseService.logout();
+    }
   }
 
   static getStorageKey(user) {
@@ -520,6 +523,13 @@ class Store {
   }
 
   save() {
+    this.saveLocalOnly();
+    if (typeof FirebaseService !== 'undefined' && this.currentUser && this.currentUser.id) {
+      FirebaseService.saveCloudState(this.currentUser.id, this.state);
+    }
+  }
+
+  saveLocalOnly() {
     try {
       localStorage.setItem(this.storageKey, JSON.stringify(this.state));
     } catch (e) {
@@ -838,6 +848,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Event Listeners: Google Authentication & Account Management
   setupAuthEvents();
   setupUserAccountModalEvents();
+  setupFirebaseModalEvents();
 
   // Initialize Authentication & User Partition
   initAuthSystem();
@@ -4514,11 +4525,28 @@ function initGoogleIdentity() {
 }
 
 function initAuthSystem() {
+  if (typeof FirebaseService !== 'undefined') {
+    FirebaseService.init();
+  }
+
   const activeUser = UserManager.getActiveUser();
   if (activeUser) {
     store.setUser(activeUser);
     updateUserProfileUI();
     renderAll();
+
+    if (typeof FirebaseService !== 'undefined' && FirebaseService.isConfigured() && activeUser.id) {
+      FirebaseService.listenToCloudChanges(activeUser.id, (remoteState) => {
+        if (remoteState && (remoteState.tasks || remoteState.habits)) {
+          store.state = remoteState;
+          store.saveLocalOnly();
+          applyTheme(store.state.theme);
+          renderAll();
+          if (currentActiveArea) renderAreaDetail(currentActiveArea);
+          showToast('Atualizado em tempo real da nuvem', '☁️');
+        }
+      });
+    }
   } else {
     openModal('authModal');
     renderSavedAccountsList();
@@ -4543,7 +4571,7 @@ function showToast(message, icon = '✨') {
   }, 3200);
 }
 
-function loginUser(userData) {
+async function loginUser(userData) {
   const user = UserManager.setActiveUser(userData);
   if (!user) return;
   store.setUser(user);
@@ -4559,6 +4587,36 @@ function loginUser(userData) {
 
   if (currentActiveArea) {
     renderAreaDetail(currentActiveArea);
+  }
+
+  // Sincronização em Nuvem (Firebase Firestore)
+  if (typeof FirebaseService !== 'undefined' && FirebaseService.isConfigured()) {
+    try {
+      const cloudState = await FirebaseService.fetchCloudState(user.id);
+      if (cloudState && (cloudState.tasks || cloudState.habits)) {
+        store.state = cloudState;
+        store.saveLocalOnly();
+        applyTheme(store.state.theme);
+        renderAll();
+        if (currentActiveArea) renderAreaDetail(currentActiveArea);
+        showToast('Dados sincronizados da nuvem!', '☁️');
+      } else {
+        FirebaseService.saveCloudState(user.id, store.state);
+      }
+
+      FirebaseService.listenToCloudChanges(user.id, (remoteState) => {
+        if (remoteState && (remoteState.tasks || remoteState.habits)) {
+          store.state = remoteState;
+          store.saveLocalOnly();
+          applyTheme(store.state.theme);
+          renderAll();
+          if (currentActiveArea) renderAreaDetail(currentActiveArea);
+          showToast('Atualizado em tempo real da nuvem', '⚡');
+        }
+      });
+    } catch (err) {
+      console.warn('Erro ao sincronizar nuvem no login:', err);
+    }
   }
 }
 
@@ -4604,6 +4662,17 @@ function updateUserProfileUI() {
       }
       const hours = Math.round((totalMins / 60) * 10) / 10;
       statFocus.textContent = hours > 0 ? `${hours}h` : `${totalMins}m`;
+    }
+
+    const cloudBadge = document.getElementById('accountCloudBadge');
+    if (cloudBadge && typeof FirebaseService !== 'undefined') {
+      if (FirebaseService.isConfigured()) {
+        cloudBadge.className = 'cloud-sync-badge status-synced';
+        cloudBadge.innerHTML = '<span class="status-indicator-dot"></span><span class="status-text">Nuvem Conectada</span>';
+      } else {
+        cloudBadge.className = 'cloud-sync-badge status-offline';
+        cloudBadge.innerHTML = '<span class="status-indicator-dot"></span><span class="status-text">Salvo Localmente</span>';
+      }
     }
   } else {
     userNameEls.forEach(el => { if (el) el.textContent = 'Não conectado'; });
@@ -4687,11 +4756,31 @@ function setupAuthEvents() {
     });
   }
 
+  const authOpenFirebaseBtn = document.getElementById('authOpenFirebaseConfigBtn');
+  if (authOpenFirebaseBtn) {
+    authOpenFirebaseBtn.addEventListener('click', () => {
+      sound.playPop();
+      closeAllModals();
+      if (typeof FirebaseService !== 'undefined') {
+        FirebaseService.openConfigModal();
+      }
+    });
+  }
+
   if (googleBtn) {
-    googleBtn.addEventListener('click', () => {
+    googleBtn.addEventListener('click', async () => {
       sound.playPop();
 
-      // 1. If user typed an email in the input, immediately log in!
+      // 1. Se Firebase estiver configurado, login popup oficial do Google!
+      if (typeof FirebaseService !== 'undefined' && FirebaseService.isConfigured()) {
+        const auraUser = await FirebaseService.loginWithGoogle();
+        if (auraUser) {
+          await loginUser(auraUser);
+        }
+        return;
+      }
+
+      // 2. Se o usuário preencheu o campo de e-mail direto
       const typedEmail = emailInput ? emailInput.value.trim() : '';
       if (typedEmail) {
         const name = nameInput && nameInput.value.trim() ? nameInput.value.trim() : typedEmail.split('@')[0];
@@ -4703,24 +4792,10 @@ function setupAuthEvents() {
         return;
       }
 
-      // 2. Try Google Identity Services prompt if available
-      if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
-        try {
-          google.accounts.id.prompt();
-        } catch (e) {}
-      }
-
-      // 3. Native immediate prompt so the user is NEVER blocked
-      const promptEmail = window.prompt('Digite seu e-mail do Google para acessar seu espaço isolado:', 'moreirabmm@gmail.com');
-      if (promptEmail && promptEmail.trim()) {
-        const clean = promptEmail.trim();
-        const defaultName = clean.split('@')[0];
-        const formattedName = defaultName.charAt(0).toUpperCase() + defaultName.slice(1);
-        loginUser({
-          email: clean,
-          name: formattedName,
-          provider: 'google'
-        });
+      // 3. Se ainda não configurou o Firebase, abre modal de configuração amigável
+      if (typeof FirebaseService !== 'undefined') {
+        closeAllModals();
+        FirebaseService.openConfigModal();
       }
     });
   }
@@ -4754,7 +4829,7 @@ function setupUserAccountModalEvents() {
 
   if (logoutBtn) {
     logoutBtn.addEventListener('click', () => {
-      if (confirm('Deseja sair da sua conta Google atual? Seus dados continuam salvos com segurança neste navegador.')) {
+      if (confirm('Deseja sair da sua conta Google atual? Seus dados continuam salvos com segurança.')) {
         sound.playPop();
         UserManager.logout();
         updateUserProfileUI();
@@ -4764,6 +4839,132 @@ function setupUserAccountModalEvents() {
       }
     });
   }
+
+  // Abrir configuração do Firebase a partir de Minha Conta
+  const openFirebaseBtn = document.getElementById('openFirebaseFromAccountBtn');
+  if (openFirebaseBtn) {
+    openFirebaseBtn.addEventListener('click', () => {
+      sound.playPop();
+      closeAllModals();
+      if (typeof FirebaseService !== 'undefined') {
+        FirebaseService.openConfigModal();
+      }
+    });
+  }
+
+  // Exportar Backup JSON no modal de Conta
+  const accountExportBtn = document.getElementById('accountExportBtn');
+  if (accountExportBtn) {
+    accountExportBtn.addEventListener('click', () => {
+      sound.playPop();
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(store.state, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `aura_backup_${getTodayString()}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+      sound.playSuccessChime();
+      showToast('Backup exportado com sucesso!', '💾');
+    });
+  }
+
+  // Importar Backup JSON no modal de Conta
+  const accountImportInput = document.getElementById('accountImportFileInput');
+  if (accountImportInput) {
+    accountImportInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const imported = JSON.parse(event.target.result);
+          if (imported && (imported.tasks || imported.habits)) {
+            store.state = imported;
+            store.save();
+            applyTheme(store.state.theme);
+            renderAll();
+            sound.playSuccessChime();
+            showToast('Backup restaurado com sucesso!', '✅');
+            closeAllModals();
+          } else {
+            alert('Formato de backup inválido.');
+          }
+        } catch (err) {
+          alert('Erro ao processar arquivo de backup JSON.');
+        }
+      };
+      reader.readAsText(file);
+    });
+  }
+}
+
+function setupFirebaseModalEvents() {
+  const closeBtn = document.getElementById('closeFirebaseConfigModal');
+  const cancelBtn = document.getElementById('cancelFirebaseConfigBtn');
+  const form = document.getElementById('firebaseConfigForm');
+  const textarea = document.getElementById('firebaseConfigJson');
+
+  const closeModal = () => {
+    sound.playPop();
+    const modal = document.getElementById('firebaseConfigModal');
+    if (modal) modal.classList.remove('open');
+  };
+
+  if (closeBtn) closeBtn.addEventListener('click', closeModal);
+  if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const raw = textarea ? textarea.value.trim() : '';
+      if (!raw) return;
+
+      const parsedConfig = parseFirebaseConfigInput(raw);
+      if (!parsedConfig || !parsedConfig.apiKey || !parsedConfig.projectId) {
+        alert('Configuração inválida. Cole o objeto firebaseConfig com pelo menos "apiKey" e "projectId".');
+        return;
+      }
+
+      const success = FirebaseService.saveConfig(parsedConfig);
+      if (success) {
+        sound.playSuccessChime();
+        closeModal();
+        showToast('Nuvem Firebase conectada com sucesso!', '☁️');
+        updateUserProfileUI();
+
+        // Se ainda não tiver usuário autenticado, disparar o login com Google imediatamente
+        const activeUser = UserManager.getActiveUser();
+        if (!activeUser) {
+          const auraUser = await FirebaseService.loginWithGoogle();
+          if (auraUser) {
+            await loginUser(auraUser);
+          }
+        }
+      } else {
+        alert('Não foi possível inicializar o Firebase. Verifique as credenciais coladas.');
+      }
+    });
+  }
+}
+
+function parseFirebaseConfigInput(raw) {
+  raw = raw.trim();
+  try {
+    return JSON.parse(raw);
+  } catch (e) {}
+
+  const match = raw.match(/\{[\s\S]*\}/);
+  if (match) {
+    try {
+      const fn = new Function('return (' + match[0] + ')');
+      const obj = fn();
+      if (obj && obj.apiKey && obj.projectId) {
+        return obj;
+      }
+    } catch (e) {}
+  }
+  return null;
 }
 
 function setupQuickCaptureModal() {
