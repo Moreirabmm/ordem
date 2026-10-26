@@ -5535,3 +5535,65 @@ textarea.apple-input::-webkit-scrollbar-thumb {
   display: flex;
   gap: 10px;
 }
+
+/* ==========================================================================
+   Smooth Task Disappearance & Collapsible Completed Section
+   ========================================================================== */
+.task-completing {
+  opacity: 0 !important;
+  transform: scale(0.95) translateY(-6px) !important;
+  max-height: 0 !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-width: 0 !important;
+  overflow: hidden !important;
+  transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1) !important;
+  pointer-events: none !important;
+}
+
+.completed-tasks-section {
+  margin-top: 14px;
+  border-top: 1px dashed var(--border-subtle);
+  padding-top: 10px;
+}
+
+.completed-tasks-toggle-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-tertiary);
+  font-size: 12px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  padding: 6px 8px;
+  border-radius: var(--radius-sm);
+  transition: all var(--trans-fast);
+  margin-bottom: 8px;
+}
+
+.completed-tasks-toggle-btn:hover {
+  color: var(--text-secondary);
+  background: var(--bg-pill);
+}
+
+.completed-tasks-toggle-btn svg {
+  transition: transform var(--trans-fast);
+}
+
+.completed-tasks-toggle-btn.open svg {
+  transform: rotate(90deg);
+}
+
+.completed-tasks-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.completed-tasks-wrapper.hidden {
+  display: none;
+}

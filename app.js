@@ -1049,6 +1049,52 @@ function renderTodayHabits() {
 /**
  * Render Task List
  */
+function createTodayTaskItem(task) {
+  const areaMeta = LIFE_AREAS[task.area] || { label: task.area, pillClass: 'pill-work' };
+  const item = document.createElement('div');
+  item.className = `task-item ${task.completed ? 'completed' : ''}`;
+  item.dataset.taskId = task.id;
+  item.innerHTML = `
+    <div class="task-check-circle" title="${task.completed ? 'Reabrir tarefa' : 'Concluir tarefa'}">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    </div>
+    <div class="task-content">
+      <div class="task-title" style="cursor: pointer;" title="${task.completed ? 'Reabrir tarefa' : 'Concluir tarefa'}">${escapeHtml(task.title)}</div>
+      <div class="task-tags">
+        <span class="task-area-pill ${areaMeta.pillClass}">${areaMeta.label.split('&')[0].trim()}</span>
+        ${task.priority === 'high' ? '<span class="task-priority-high">Alta Prioridade 🔥</span>' : ''}
+      </div>
+    </div>
+    <div class="task-actions">
+      <button class="task-delete-btn" title="Excluir">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  `;
+
+  const toggle = (e) => {
+    e.stopPropagation();
+    toggleTask(task.id);
+  };
+
+  item.querySelector('.task-check-circle').addEventListener('click', toggle);
+  item.querySelector('.task-title').addEventListener('click', toggle);
+
+  item.querySelector('.task-delete-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    deleteTask(task.id);
+  });
+
+  return item;
+}
+
+let _todayCompletedSectionOpen = false;
+
 function renderTodayTasks(filter = 'all') {
   const container = document.getElementById('todayTaskList');
   if (!container) return;
@@ -1058,62 +1104,63 @@ function renderTodayTasks(filter = 'all') {
     filteredTasks = filteredTasks.filter(t => t.area === filter);
   }
 
-  if (filteredTasks.length === 0) {
-    container.innerHTML = `<div class="empty-state">Nenhuma ação pendente nesta categoria. Aproveite o momento ou crie uma nova.</div>`;
+  const pendingTasks = filteredTasks.filter(t => !t.completed);
+  const completedTasks = filteredTasks.filter(t => t.completed);
+
+  // Update pending badge
+  const pendingTotal = store.state.tasks.filter(t => !t.completed).length;
+  const badge = document.getElementById('todayPendingBadge');
+  if (badge) badge.textContent = pendingTotal;
+
+  container.innerHTML = '';
+
+  if (pendingTasks.length === 0 && completedTasks.length === 0) {
+    container.innerHTML = `<div class="empty-state">Nenhuma ação nesta categoria. Crie uma nova tarefa acima para focar no que importa.</div>`;
     return;
   }
 
-  const fragment = document.createDocumentFragment();
-  filteredTasks.forEach(task => {
-    const areaMeta = LIFE_AREAS[task.area] || { label: task.area, pillClass: 'pill-work' };
-    const item = document.createElement('div');
-    item.className = `task-item ${task.completed ? 'completed' : ''}`;
-    item.dataset.taskId = task.id;
-    item.innerHTML = `
-      <div class="task-check-circle" title="Marcar como concluída">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-          <polyline points="20 6 9 17 4 12"></polyline>
+  // Render pending tasks
+  if (pendingTasks.length === 0) {
+    const doneBox = document.createElement('div');
+    doneBox.className = 'empty-state';
+    doneBox.style.padding = '20px 10px';
+    doneBox.innerHTML = '🎉 Todas as tarefas de hoje foram concluídas!';
+    container.appendChild(doneBox);
+  } else {
+    pendingTasks.forEach(task => {
+      container.appendChild(createTodayTaskItem(task));
+    });
+  }
+
+  // Render collapsed completed section
+  if (completedTasks.length > 0) {
+    const section = document.createElement('div');
+    section.className = 'completed-tasks-section';
+    section.innerHTML = `
+      <button class="completed-tasks-toggle-btn ${_todayCompletedSectionOpen ? 'open' : ''}" id="todayCompletedToggleBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12">
+          <polyline points="9 18 15 12 9 6"></polyline>
         </svg>
-      </div>
-      <div class="task-content">
-        <div class="task-title">${escapeHtml(task.title)}</div>
-        <div class="task-tags">
-          <span class="task-area-pill ${areaMeta.pillClass}">${areaMeta.label.split('&')[0].trim()}</span>
-          ${task.priority === 'high' ? '<span class="task-priority-high">Alta Prioridade 🔥</span>' : ''}
-        </div>
-      </div>
-      <div class="task-actions">
-        <button class="task-delete-btn" title="Excluir">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
+        <span>Concluídas (${completedTasks.length})</span>
+      </button>
+      <div class="completed-tasks-wrapper ${_todayCompletedSectionOpen ? '' : 'hidden'}" id="todayCompletedWrapper"></div>
     `;
 
-    // Checkbox toggle
-    item.querySelector('.task-check-circle').addEventListener('click', (e) => {
-      e.stopPropagation();
-      toggleTask(task.id);
+    const wrapper = section.querySelector('#todayCompletedWrapper');
+    completedTasks.forEach(task => {
+      wrapper.appendChild(createTodayTaskItem(task));
     });
 
-    // Delete task
-    item.querySelector('.task-delete-btn').addEventListener('click', (e) => {
-      e.stopPropagation();
-      deleteTask(task.id);
-    });
+    const toggleBtn = section.querySelector('#todayCompletedToggleBtn');
+    toggleBtn.onclick = () => {
+      sound.playPop();
+      _todayCompletedSectionOpen = !_todayCompletedSectionOpen;
+      toggleBtn.classList.toggle('open', _todayCompletedSectionOpen);
+      wrapper.classList.toggle('hidden', !_todayCompletedSectionOpen);
+    };
 
-    fragment.appendChild(item);
-  });
-
-  container.innerHTML = '';
-  container.appendChild(fragment);
-
-  // Update pending badge
-  const pendingCount = store.state.tasks.filter(t => !t.completed).length;
-  const badge = document.getElementById('todayPendingBadge');
-  if (badge) badge.textContent = pendingCount;
+    container.appendChild(section);
+  }
 }
 
 /**
@@ -1374,29 +1421,33 @@ function renderFullHabits() {
 function toggleTask(id) {
   const task = store.state.tasks.find(t => t.id === id);
   if (!task) return;
-  task.completed = !task.completed;
-  if (task.completed) {
-    sound.playSuccessChime();
-  } else {
-    sound.playPop();
-  }
-  store.save();
 
-  // Fast atomic DOM update for the clicked task item
   const taskEl = document.querySelector(`.task-item[data-task-id="${id}"]`);
-  if (taskEl) {
-    taskEl.classList.toggle('completed', task.completed);
-    const pendingCount = store.state.tasks.filter(t => !t.completed).length;
-    const badge = document.getElementById('todayPendingBadge');
-    if (badge) badge.textContent = pendingCount;
-  } else {
-    renderTodayTasks();
-  }
 
-  renderActivityRings();
-  renderCounts();
-  if (currentActiveArea) {
-    renderAreaDetail(currentActiveArea);
+  if (!task.completed) {
+    // Marcar como concluída: feedback sonoro + animação suave de desaparecimento
+    sound.playSuccessChime();
+    if (taskEl) {
+      taskEl.classList.add('completed');
+      taskEl.classList.add('task-completing');
+    }
+    setTimeout(() => {
+      task.completed = true;
+      store.save();
+      renderTodayTasks();
+      renderActivityRings();
+      renderCounts();
+      if (currentActiveArea) renderAreaDetail(currentActiveArea);
+    }, 280);
+  } else {
+    // Reabrir tarefa
+    sound.playPop();
+    task.completed = false;
+    store.save();
+    renderTodayTasks();
+    renderActivityRings();
+    renderCounts();
+    if (currentActiveArea) renderAreaDetail(currentActiveArea);
   }
 }
 
@@ -6281,119 +6332,119 @@ function renderFocusActiveTarget() {
   }
 }
 
-function renderFocusTasks() {
-  const container = document.getElementById('focusTasksContainer');
-  const countBadge = document.getElementById('focusTasksCountBadge');
-  if (!container) return;
+let _focusCompletedSectionOpen = false;
 
-  if (!store.state.focus) store.state.focus = { tasks: [], sessions: [] };
-  if (!store.state.focus.tasks) store.state.focus.tasks = [];
+function createFocusTaskCard(task) {
+  const isActive = (store.state.focus.activeTaskId === task.id);
+  const card = document.createElement('div');
+  card.className = `focus-task-card ${isActive ? 'active-target' : ''} ${task.completed ? 'completed' : ''}`;
 
-  const tasks = store.state.focus.tasks;
-  if (countBadge) countBadge.textContent = tasks.length;
+  const cycleCount = task.cycles || 0;
+  const totalMinutes = cycleCount * 25;
 
-  container.innerHTML = '';
-
-  if (tasks.length === 0) {
-    container.innerHTML = `<div class="empty-state" style="padding: 24px 10px;">Nenhuma tarefa na lista de foco.<br>Adicione uma demanda acima para metrificar seus períodos de foco.</div>`;
-    return;
-  }
-
-  tasks.forEach(task => {
-    const isActive = (store.state.focus.activeTaskId === task.id);
-    const card = document.createElement('div');
-    card.className = `focus-task-card ${isActive ? 'active-target' : ''} ${task.completed ? 'completed' : ''}`;
-
-    const cycleCount = task.cycles || 0;
-    const totalMinutes = cycleCount * 25;
-
-    card.innerHTML = `
-      <div class="focus-task-left">
-        <div class="task-check-circle" title="${task.completed ? 'Reabrir tarefa' : 'Concluir tarefa'}">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-            <polyline points="20 6 9 17 4 12"></polyline>
-          </svg>
-        </div>
+  card.innerHTML = `
+    <div class="focus-task-left">
+      <div class="task-check-circle" title="${task.completed ? 'Reabrir tarefa' : 'Concluir tarefa'}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+          <polyline points="20 6 9 17 4 12"></polyline>
+        </svg>
+      </div>
+      ${!task.completed ? `
         <button class="focus-target-select-btn" title="Focar nesta demanda">
           ${isActive ? '🎯 Em Foco' : '🎯 Focar'}
         </button>
-        <span class="focus-task-text">${escapeHtml(task.title)}</span>
-      </div>
+      ` : ''}
+      <span class="focus-task-text" style="cursor: pointer;" title="${task.completed ? 'Reabrir tarefa' : 'Concluir tarefa'}">${escapeHtml(task.title)}</span>
+    </div>
 
-      <div class="focus-cycle-counter-group">
+    <div class="focus-cycle-counter-group">
+      ${!task.completed ? `
         <button class="focus-stepper-btn btn-step-down" title="Diminuir 1 ciclo">-</button>
         <span class="focus-cycle-pill" title="${cycleCount} períodos (${totalMinutes} min)">
           🍅 ${cycleCount} <span style="font-weight: 500; font-size: 10px; opacity: 0.85;">(${totalMinutes}m)</span>
         </span>
         <button class="focus-stepper-btn btn-step-up" title="Adicionar 1 ciclo">+ </button>
-        <button class="task-delete-btn delete-focus-task-btn" title="Excluir tarefa" style="margin-left: 4px;">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
-            <line x1="18" y1="6" x2="6" y2="18"></line>
-            <line x1="6" y1="6" x2="18" y2="18"></line>
-          </svg>
-        </button>
-      </div>
-    `;
+      ` : `
+        <span class="focus-cycle-pill" title="${cycleCount} períodos (${totalMinutes} min)" style="opacity: 0.7;">
+          🍅 ${cycleCount} (${totalMinutes}m)
+        </span>
+      `}
+      <button class="task-delete-btn delete-focus-task-btn" title="Excluir tarefa" style="margin-left: 4px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+    </div>
+  `;
 
-    // Checkbox toggle (clicking circle or text)
-    const toggleFocusTask = () => {
-      task.completed = !task.completed;
-      if (task.completed) {
-        sound.playSuccessChime();
+  // Toggle completion with smooth disappearance animation
+  const toggleFocusTask = () => {
+    if (!task.completed) {
+      card.classList.add('completed');
+      card.classList.add('task-completing');
+      sound.playSuccessChime();
+      setTimeout(() => {
+        task.completed = true;
         if (store.state.focus.activeTaskId === task.id) {
           const nextActive = store.state.focus.tasks.find(t => !t.completed && t.id !== task.id);
           store.state.focus.activeTaskId = nextActive ? nextActive.id : null;
         }
-      } else {
-        sound.playPop();
-      }
+        store.save();
+        renderFocusSection();
+      }, 280);
+    } else {
+      task.completed = false;
+      sound.playPop();
       store.save();
       renderFocusSection();
+    }
+  };
+
+  const checkBtn = card.querySelector('.task-check-circle');
+  if (checkBtn) {
+    checkBtn.onclick = (e) => {
+      e.stopPropagation();
+      toggleFocusTask();
     };
+  }
 
-    const checkBtn = card.querySelector('.task-check-circle');
-    if (checkBtn) {
-      checkBtn.onclick = (e) => {
-        e.stopPropagation();
-        toggleFocusTask();
-      };
-    }
+  const taskText = card.querySelector('.focus-task-text');
+  if (taskText) {
+    taskText.onclick = (e) => {
+      e.stopPropagation();
+      toggleFocusTask();
+    };
+  }
 
-    const taskText = card.querySelector('.focus-task-text');
-    if (taskText) {
-      taskText.style.cursor = 'pointer';
-      taskText.title = task.completed ? 'Clique para reabrir tarefa' : 'Clique para concluir tarefa';
-      taskText.onclick = (e) => {
-        e.stopPropagation();
-        toggleFocusTask();
-      };
-    }
-
-    // Target select
-    card.querySelector('.focus-target-select-btn').onclick = (e) => {
+  const targetSelectBtn = card.querySelector('.focus-target-select-btn');
+  if (targetSelectBtn) {
+    targetSelectBtn.onclick = (e) => {
       e.stopPropagation();
       sound.playPop();
       store.state.focus.activeTaskId = task.id;
       store.save();
       renderFocusSection();
     };
+  }
 
-    // Stepper down (-)
-    card.querySelector('.btn-step-down').onclick = (e) => {
+  const stepDownBtn = card.querySelector('.btn-step-down');
+  if (stepDownBtn) {
+    stepDownBtn.onclick = (e) => {
       e.stopPropagation();
       sound.playPop();
       task.cycles = Math.max(0, (task.cycles || 0) - 1);
       store.save();
       renderFocusSection();
     };
+  }
 
-    // Stepper up (+)
-    card.querySelector('.btn-step-up').onclick = (e) => {
+  const stepUpBtn = card.querySelector('.btn-step-up');
+  if (stepUpBtn) {
+    stepUpBtn.onclick = (e) => {
       e.stopPropagation();
       sound.playSuccessChime();
       task.cycles = (task.cycles || 0) + 1;
-
-      // Log session in history
       if (!store.state.focus.sessions) store.state.focus.sessions = [];
       store.state.focus.sessions.unshift({
         id: 'fs_' + Date.now(),
@@ -6403,13 +6454,14 @@ function renderFocusTasks() {
         durationMinutes: 25,
         mode: 'Foco 25m'
       });
-
       store.save();
       renderFocusSection();
     };
+  }
 
-    // Delete
-    card.querySelector('.delete-focus-task-btn').onclick = (e) => {
+  const deleteBtn = card.querySelector('.delete-focus-task-btn');
+  if (deleteBtn) {
+    deleteBtn.onclick = (e) => {
       e.stopPropagation();
       sound.playPop();
       store.state.focus.tasks = store.state.focus.tasks.filter(t => t.id !== task.id);
@@ -6419,9 +6471,74 @@ function renderFocusTasks() {
       store.save();
       renderFocusSection();
     };
+  }
 
-    container.appendChild(card);
-  });
+  return card;
+}
+
+function renderFocusTasks() {
+  const container = document.getElementById('focusTasksContainer');
+  const countBadge = document.getElementById('focusTasksCountBadge');
+  if (!container) return;
+
+  if (!store.state.focus) store.state.focus = { tasks: [], sessions: [] };
+  if (!store.state.focus.tasks) store.state.focus.tasks = [];
+
+  const allTasks = store.state.focus.tasks;
+  const pendingTasks = allTasks.filter(t => !t.completed);
+  const completedTasks = allTasks.filter(t => t.completed);
+
+  if (countBadge) countBadge.textContent = pendingTasks.length;
+
+  container.innerHTML = '';
+
+  if (pendingTasks.length === 0 && completedTasks.length === 0) {
+    container.innerHTML = `<div class="empty-state" style="padding: 24px 10px;">Nenhuma tarefa na lista de foco.<br>Adicione uma demanda acima para metrificar seus períodos de foco.</div>`;
+    return;
+  }
+
+  // Render pending tasks
+  if (pendingTasks.length === 0) {
+    const allDone = document.createElement('div');
+    allDone.className = 'empty-state';
+    allDone.style.padding = '20px 10px';
+    allDone.innerHTML = '🎉 Todas as tarefas de foco foram concluídas!';
+    container.appendChild(allDone);
+  } else {
+    pendingTasks.forEach(task => {
+      container.appendChild(createFocusTaskCard(task));
+    });
+  }
+
+  // Render collapsible completed section
+  if (completedTasks.length > 0) {
+    const compSection = document.createElement('div');
+    compSection.className = 'completed-tasks-section';
+    compSection.innerHTML = `
+      <button class="completed-tasks-toggle-btn ${_focusCompletedSectionOpen ? 'open' : ''}" id="focusCompletedToggleBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" width="12" height="12">
+          <polyline points="9 18 15 12 9 6"></polyline>
+        </svg>
+        <span>Concluídas (${completedTasks.length})</span>
+      </button>
+      <div class="completed-tasks-wrapper ${_focusCompletedSectionOpen ? '' : 'hidden'}" id="focusCompletedWrapper"></div>
+    `;
+
+    const wrapper = compSection.querySelector('#focusCompletedWrapper');
+    completedTasks.forEach(task => {
+      wrapper.appendChild(createFocusTaskCard(task));
+    });
+
+    const toggleBtn = compSection.querySelector('#focusCompletedToggleBtn');
+    toggleBtn.onclick = () => {
+      sound.playPop();
+      _focusCompletedSectionOpen = !_focusCompletedSectionOpen;
+      toggleBtn.classList.toggle('open', _focusCompletedSectionOpen);
+      wrapper.classList.toggle('hidden', !_focusCompletedSectionOpen);
+    };
+
+    container.appendChild(compSection);
+  }
 }
 
 function renderFocusKpis() {
