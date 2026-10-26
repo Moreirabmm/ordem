@@ -4543,7 +4543,6 @@ function initAuthSystem() {
           applyTheme(store.state.theme);
           renderAll();
           if (currentActiveArea) renderAreaDetail(currentActiveArea);
-          showToast('Atualizado em tempo real da nuvem', '☁️');
         }
       });
     }
@@ -4599,7 +4598,6 @@ async function loginUser(userData) {
         applyTheme(store.state.theme);
         renderAll();
         if (currentActiveArea) renderAreaDetail(currentActiveArea);
-        showToast('Dados sincronizados da nuvem!', '☁️');
       } else {
         FirebaseService.saveCloudState(user, store.state);
       }
@@ -4611,7 +4609,6 @@ async function loginUser(userData) {
           applyTheme(store.state.theme);
           renderAll();
           if (currentActiveArea) renderAreaDetail(currentActiveArea);
-          showToast('Atualizado em tempo real da nuvem', '⚡');
         }
       });
     } catch (err) {
