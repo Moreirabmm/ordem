@@ -3,6 +3,16 @@
 // ==========================================================================
 
 const FirebaseService = {
+  DEFAULT_CONFIG: {
+    apiKey: "AIzaSyAyai8-s-w9Jzv2opS6dzkp16Wvxfs5W5s",
+    authDomain: "ordem-a686e.firebaseapp.com",
+    projectId: "ordem-a686e",
+    storageBucket: "ordem-a686e.firebasestorage.app",
+    messagingSenderId: "353462099260",
+    appId: "1:353462099260:web:4f72df4feec0bc0acf1239",
+    measurementId: "G-FZLQSS50SG"
+  },
+
   FIREBASE_CONFIG_KEY: 'aura_firebase_config',
   CLOUD_SYNC_DEBOUNCE_MS: 1000,
   _syncTimeout: null,
@@ -22,7 +32,7 @@ const FirebaseService = {
     } catch (e) {
       console.warn('Erro ao carregar Firebase config do localStorage:', e);
     }
-    return null;
+    return this.DEFAULT_CONFIG;
   },
 
   saveConfig(config) {
@@ -75,6 +85,15 @@ const FirebaseService = {
     }
   },
 
+  _resolveDocId(target) {
+    if (!target) return null;
+    if (typeof target === 'object') {
+      if (target.email) return target.email.toLowerCase().trim();
+      return target.id || target.uid;
+    }
+    return String(target).toLowerCase().trim();
+  },
+
   async loginWithGoogle() {
     if (!this.isConfigured()) {
       this.openConfigModal();
@@ -103,6 +122,8 @@ const FirebaseService = {
         if (typeof showToast === 'function') showToast('Login cancelado', 'ℹ️');
       } else if (e.code === 'auth/unauthorized-domain') {
         alert('Este domínio ainda não está autorizado no Firebase Authentication.\n\nPara liberar:\n1. Acesse https://console.firebase.google.com\n2. Vá em Authentication > Settings > Authorized Domains\n3. Adicione "localhost" e o domínio da sua aplicação.');
+      } else if (e.code === 'auth/operation-not-allowed') {
+        alert('O provedor de login do Google ainda não está ativado no Firebase Console.\n\nPara ativar:\n1. Acesse console.firebase.google.com > seu projeto\n2. Vá em Authentication > Sign-in method\n3. Clique em Google, marque "Ativar" e salve.');
       } else {
         alert('Falha ao autenticar com o Google via Firebase:\n' + (e.message || e.code));
       }
@@ -123,12 +144,13 @@ const FirebaseService = {
     this.updateCloudStatus('offline', 'Desconectado');
   },
 
-  async fetchCloudState(uid) {
-    if (!this.isConfigured() || typeof firebase === 'undefined' || !firebase.apps.length || !uid) return null;
+  async fetchCloudState(userOrId) {
+    const docId = this._resolveDocId(userOrId);
+    if (!this.isConfigured() || typeof firebase === 'undefined' || !firebase.apps.length || !docId) return null;
     try {
       this.updateCloudStatus('syncing', 'Buscando da nuvem...');
       const db = firebase.firestore();
-      const doc = await db.collection('aura_users').doc(uid).get();
+      const doc = await db.collection('aura_users').doc(docId).get();
       if (doc.exists) {
         const cloudData = doc.data();
         this.updateCloudStatus('synced', 'Nuvem Sincronizada');
@@ -143,8 +165,9 @@ const FirebaseService = {
     }
   },
 
-  saveCloudState(uid, state) {
-    if (!this.isConfigured() || typeof firebase === 'undefined' || !firebase.apps.length || !uid || !state) return;
+  saveCloudState(userOrId, state) {
+    const docId = this._resolveDocId(userOrId);
+    if (!this.isConfigured() || typeof firebase === 'undefined' || !firebase.apps.length || !docId || !state) return;
     if (this._isApplyingRemoteUpdate) return;
 
     clearTimeout(this._syncTimeout);
@@ -154,7 +177,7 @@ const FirebaseService = {
       try {
         this._isSyncingToCloud = true;
         const db = firebase.firestore();
-        await db.collection('aura_users').doc(uid).set({
+        await db.collection('aura_users').doc(docId).set({
           state: state,
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
@@ -169,8 +192,9 @@ const FirebaseService = {
     }, this.CLOUD_SYNC_DEBOUNCE_MS);
   },
 
-  listenToCloudChanges(uid, onRemoteUpdateCallback) {
-    if (!this.isConfigured() || typeof firebase === 'undefined' || !firebase.apps.length || !uid) return;
+  listenToCloudChanges(userOrId, onRemoteUpdateCallback) {
+    const docId = this._resolveDocId(userOrId);
+    if (!this.isConfigured() || typeof firebase === 'undefined' || !firebase.apps.length || !docId) return;
     
     if (this._unsubscribeListener) {
       this._unsubscribeListener();
@@ -178,7 +202,7 @@ const FirebaseService = {
 
     try {
       const db = firebase.firestore();
-      this._unsubscribeListener = db.collection('aura_users').doc(uid)
+      this._unsubscribeListener = db.collection('aura_users').doc(docId)
         .onSnapshot((doc) => {
           if (doc.metadata && doc.metadata.hasPendingWrites) {
             return;

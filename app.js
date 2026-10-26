@@ -525,7 +525,7 @@ class Store {
   save() {
     this.saveLocalOnly();
     if (typeof FirebaseService !== 'undefined' && this.currentUser && this.currentUser.id) {
-      FirebaseService.saveCloudState(this.currentUser.id, this.state);
+      FirebaseService.saveCloudState(this.currentUser, this.state);
     }
   }
 
@@ -4536,7 +4536,7 @@ function initAuthSystem() {
     renderAll();
 
     if (typeof FirebaseService !== 'undefined' && FirebaseService.isConfigured() && activeUser.id) {
-      FirebaseService.listenToCloudChanges(activeUser.id, (remoteState) => {
+      FirebaseService.listenToCloudChanges(activeUser, (remoteState) => {
         if (remoteState && (remoteState.tasks || remoteState.habits)) {
           store.state = remoteState;
           store.saveLocalOnly();
@@ -4592,7 +4592,7 @@ async function loginUser(userData) {
   // Sincronização em Nuvem (Firebase Firestore)
   if (typeof FirebaseService !== 'undefined' && FirebaseService.isConfigured()) {
     try {
-      const cloudState = await FirebaseService.fetchCloudState(user.id);
+      const cloudState = await FirebaseService.fetchCloudState(user);
       if (cloudState && (cloudState.tasks || cloudState.habits)) {
         store.state = cloudState;
         store.saveLocalOnly();
@@ -4601,10 +4601,10 @@ async function loginUser(userData) {
         if (currentActiveArea) renderAreaDetail(currentActiveArea);
         showToast('Dados sincronizados da nuvem!', '☁️');
       } else {
-        FirebaseService.saveCloudState(user.id, store.state);
+        FirebaseService.saveCloudState(user, store.state);
       }
 
-      FirebaseService.listenToCloudChanges(user.id, (remoteState) => {
+      FirebaseService.listenToCloudChanges(user, (remoteState) => {
         if (remoteState && (remoteState.tasks || remoteState.habits)) {
           store.state = remoteState;
           store.saveLocalOnly();
