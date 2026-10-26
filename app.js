@@ -98,6 +98,8 @@ const INITIAL_DATA = {
     { id: 'k6', title: 'Kickoff do projeto com a equipe e stakeholders', client: 'Interno', project: 'Liderança', priority: 'normal', due: 'Segunda-feira', status: 'done' }
   ],
   finance: {
+    monthlyBudget: 5000,
+    savingsGoal: 1500,
     transactions: [
       { id: 'f1', description: 'Salário / Pró-labore', type: 'income', amount: 7500.00, category: 'Trabalho', date: '2026-10-05' },
       { id: 'f2', description: 'Consultoria Estratégica', type: 'income', amount: 1800.00, category: 'Trabalho', date: '2026-10-18' },
@@ -110,6 +112,8 @@ const INITIAL_DATA = {
     ]
   },
   knowledge: {
+    booksGoalYear: 12,
+    dailyPagesGoal: 20,
     books: [
       { id: 'b1', title: 'Essencialismo', author: 'Greg McKeown', totalPages: 272, currentPage: 184, status: 'reading', category: 'Produtividade', lastInsight: 'A capacidade de escolher não pode ser retirada, apenas esquecida.', lastReadDate: 'Hoje' },
       { id: 'b2', title: 'Hábitos Atômicos', author: 'James Clear', totalPages: 320, currentPage: 320, status: 'completed', category: 'Desenvolvimento', lastInsight: 'Você não se eleva ao nível dos seus objetivos; você cai ao nível dos seus sistemas.', lastReadDate: 'Semana passada' },
@@ -132,6 +136,7 @@ const INITIAL_DATA = {
     ]
   },
   focus: {
+    dailyCyclesGoal: 4,
     activeTaskId: 'ft1',
     tasks: [
       { id: 'ft1', title: 'Estruturar arquitetura e lógica do sistema', cycles: 3, completed: false },
@@ -203,9 +208,13 @@ function getEmptyUserData() {
     },
     workKanban: [],
     finance: {
+      monthlyBudget: 5000,
+      savingsGoal: 1500,
       transactions: []
     },
     knowledge: {
+      booksGoalYear: 12,
+      dailyPagesGoal: 20,
       books: [],
       courses: []
     },
@@ -215,6 +224,7 @@ function getEmptyUserData() {
       events: []
     },
     focus: {
+      dailyCyclesGoal: 4,
       activeTaskId: null,
       tasks: [],
       sessions: []
@@ -312,21 +322,31 @@ class Store {
         const parsed = JSON.parse(saved);
         if (!parsed.health) parsed.health = { nutrition: { meals: [] }, workout: { routines: [], exercises: [] }, running: { weeklyGoalKm: 20, currentWeeklyKm: 0, sessions: [] } };
         if (!parsed.health.nutrition) parsed.health.nutrition = { calorieGoal: 2200, currentCalories: 0, proteinGoal: 150, currentProtein: 0, carbGoal: 220, currentCarb: 0, fatGoal: 65, currentFat: 0, meals: [] };
+        if (!parsed.health.nutrition.calorieGoal) parsed.health.nutrition.calorieGoal = 2200;
+        if (!parsed.health.nutrition.proteinGoal) parsed.health.nutrition.proteinGoal = 150;
+        if (!parsed.health.nutrition.carbGoal) parsed.health.nutrition.carbGoal = 220;
+        if (!parsed.health.nutrition.fatGoal) parsed.health.nutrition.fatGoal = 65;
         if (!Array.isArray(parsed.health.nutrition.meals)) parsed.health.nutrition.meals = [];
         if (!parsed.health.workout) parsed.health.workout = { activeRoutine: '', routines: [], exercises: [] };
         if (!Array.isArray(parsed.health.workout.routines)) parsed.health.workout.routines = [];
         if (!Array.isArray(parsed.health.workout.exercises)) parsed.health.workout.exercises = [];
         if (!parsed.health.running) parsed.health.running = { weeklyGoalKm: 20, currentWeeklyKm: 0, sessions: [] };
+        if (!parsed.health.running.weeklyGoalKm) parsed.health.running.weeklyGoalKm = 20;
         if (!Array.isArray(parsed.health.running.sessions)) parsed.health.running.sessions = [];
         if (!Array.isArray(parsed.workKanban)) parsed.workKanban = [];
-        if (!parsed.finance) parsed.finance = { transactions: [] };
+        if (!parsed.finance) parsed.finance = { monthlyBudget: 5000, savingsGoal: 1500, transactions: [] };
+        if (!parsed.finance.monthlyBudget) parsed.finance.monthlyBudget = 5000;
+        if (!parsed.finance.savingsGoal) parsed.finance.savingsGoal = 1500;
         if (!Array.isArray(parsed.finance.transactions)) parsed.finance.transactions = [];
-        if (!parsed.knowledge) parsed.knowledge = { books: [], courses: [] };
+        if (!parsed.knowledge) parsed.knowledge = { booksGoalYear: 12, dailyPagesGoal: 20, books: [], courses: [] };
+        if (!parsed.knowledge.booksGoalYear) parsed.knowledge.booksGoalYear = 12;
+        if (!parsed.knowledge.dailyPagesGoal) parsed.knowledge.dailyPagesGoal = 20;
         if (!Array.isArray(parsed.knowledge.books)) parsed.knowledge.books = [];
         if (!Array.isArray(parsed.knowledge.courses)) parsed.knowledge.courses = [];
         if (!parsed.calendar) parsed.calendar = { googleCalendarId: '', viewMode: 'WEEK', events: [] };
         if (!Array.isArray(parsed.calendar.events)) parsed.calendar.events = [];
-        if (!parsed.focus) parsed.focus = { tasks: [], sessions: [], activeTaskId: null };
+        if (!parsed.focus) parsed.focus = { dailyCyclesGoal: 4, tasks: [], sessions: [], activeTaskId: null };
+        if (!parsed.focus.dailyCyclesGoal) parsed.focus.dailyCyclesGoal = 4;
         if (!Array.isArray(parsed.focus.tasks)) parsed.focus.tasks = [];
         if (!Array.isArray(parsed.focus.sessions)) parsed.focus.sessions = [];
         if (!Array.isArray(parsed.tasks)) parsed.tasks = [];
@@ -666,6 +686,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Event Listeners: Settings & Data Modal
   setupSettingsModal();
 
+  // Event Listeners: Custom Goals & Budgets Modals (Saúde, Finanças, Conhecimento, Foco)
+  setupGoalsModals();
+
   // Event Listeners: Health & Fitness Specialized Modals
   setupHealthModals();
 
@@ -911,13 +934,15 @@ function renderTodayTasks(filter = 'all') {
  * Render Water Tracker Bar
  */
 function renderWaterTracker() {
-  const current = store.state.water;
-  const goal = store.state.waterGoal;
+  const current = store.state.water || 0;
+  const goal = store.state.waterGoal || 2500;
   const pct = Math.min(100, Math.round((current / goal) * 100));
   
   const text = document.getElementById('waterCount');
+  const goalEl = document.getElementById('waterGoalDisplay');
   const bar = document.getElementById('waterProgressBar');
   if (text) text.textContent = current.toLocaleString('pt-BR');
+  if (goalEl) goalEl.textContent = goal.toLocaleString('pt-BR');
   if (bar) bar.style.width = `${pct}%`;
 }
 
@@ -1693,7 +1718,9 @@ function openEditExerciseModal(ex) {
 
 function renderHealthRunning() {
   const running = store.state.health.running;
-  document.getElementById('runWeeklyKmVal').textContent = `${running.currentWeeklyKm.toFixed(1)} km`;
+  const weeklyGoal = running.weeklyGoalKm || 20;
+  const kmEl = document.getElementById('runWeeklyKmVal');
+  if (kmEl) kmEl.textContent = `${running.currentWeeklyKm.toFixed(1)} / ${weeklyGoal} km`;
   
   // Calculate average pace of sessions
   if (running.sessions.length > 0) {
@@ -2489,6 +2516,28 @@ function renderFinanceHub() {
     savingsEl.textContent = `Taxa de Poupança: ${savingsRate}% (${netBalance >= 0 ? 'Superávit' : 'Déficit'})`;
   }
 
+  // Update Budget Progress KPI Card
+  const monthlyBudget = (store.state.finance && store.state.finance.monthlyBudget) ? store.state.finance.monthlyBudget : 5000;
+  const budgetValEl = document.getElementById('financeBudgetVal');
+  const budgetBarEl = document.getElementById('financeBudgetBar');
+  const budgetSubEl = document.getElementById('financeBudgetSub');
+
+  if (budgetValEl && budgetBarEl && budgetSubEl) {
+    const budgetPct = monthlyBudget > 0 ? Math.min(100, Math.round((totalExpense / monthlyBudget) * 100)) : 0;
+    budgetValEl.textContent = `${formatBRL(totalExpense)} / ${formatBRL(monthlyBudget)}`;
+    budgetBarEl.style.width = `${budgetPct}%`;
+    if (totalExpense > monthlyBudget) {
+      budgetBarEl.style.background = 'var(--accent-red)';
+      budgetSubEl.textContent = `Excedeu o teto em ${formatBRL(totalExpense - monthlyBudget)}! (${Math.round((totalExpense / monthlyBudget) * 100)}%)`;
+      budgetSubEl.style.color = 'var(--accent-red)';
+    } else {
+      budgetBarEl.style.background = budgetPct > 80 ? 'var(--accent-orange)' : 'var(--accent-green)';
+      const remaining = monthlyBudget - totalExpense;
+      budgetSubEl.textContent = `${budgetPct}% do teto mensal utilizado (${formatBRL(remaining)} restante)`;
+      budgetSubEl.style.color = 'var(--text-secondary)';
+    }
+  }
+
   renderFinanceTable();
 }
 
@@ -2705,10 +2754,20 @@ function renderKnowledgeBooks() {
   const readingEl = document.getElementById('booksReadingCountVal');
   const pagesEl = document.getElementById('booksPagesReadVal');
   const completedEl = document.getElementById('booksCompletedCountVal');
+  const completedSubEl = document.getElementById('booksCompletedSub');
+  const pagesSubEl = document.getElementById('booksPagesSub');
+
+  const booksGoalYear = (store.state.knowledge && store.state.knowledge.booksGoalYear) ? store.state.knowledge.booksGoalYear : 12;
+  const dailyPagesGoal = (store.state.knowledge && store.state.knowledge.dailyPagesGoal) ? store.state.knowledge.dailyPagesGoal : 20;
 
   if (readingEl) readingEl.textContent = readingBooks.length;
   if (pagesEl) pagesEl.textContent = `${totalPagesRead.toLocaleString('pt-BR')} págs`;
-  if (completedEl) completedEl.textContent = completedBooks.length;
+  if (pagesSubEl) pagesSubEl.textContent = `Meta: ${dailyPagesGoal} págs/dia • Registradas`;
+  if (completedEl) completedEl.textContent = `${completedBooks.length} / ${booksGoalYear}`;
+  if (completedSubEl) {
+    const pct = Math.min(100, Math.round((completedBooks.length / booksGoalYear) * 100));
+    completedSubEl.textContent = `${pct}% da meta anual atingida (${booksGoalYear} livros)`;
+  }
 
   const container = document.getElementById('booksGridContainer');
   if (!container) return;
@@ -4129,6 +4188,203 @@ function setupSettingsModal() {
   }
 }
 
+function setupGoalsModals() {
+  // 1. Health & Diet Goals Modal
+  const openHealthBtn = document.getElementById('openEditNutritionGoalsBtn');
+  const settingsHealthBtn = document.getElementById('settingsHealthGoalsBtn');
+  const closeHealthBtn = document.getElementById('closeHealthGoalsModal');
+  const saveHealthBtn = document.getElementById('saveHealthGoalsBtn');
+
+  const calInput = document.getElementById('goalCaloriesInput');
+  const protInput = document.getElementById('goalProteinInput');
+  const carbInput = document.getElementById('goalCarbsInput');
+  const fatInput = document.getElementById('goalFatInput');
+  const waterInput = document.getElementById('goalWaterInput');
+  const runInput = document.getElementById('goalRunningInput');
+
+  function openHealthGoals() {
+    sound.playPop();
+    const nutrition = (store.state.health && store.state.health.nutrition) ? store.state.health.nutrition : {};
+    const running = (store.state.health && store.state.health.running) ? store.state.health.running : {};
+
+    if (calInput) calInput.value = nutrition.calorieGoal || 2200;
+    if (protInput) protInput.value = nutrition.proteinGoal || 150;
+    if (carbInput) carbInput.value = nutrition.carbGoal || 220;
+    if (fatInput) fatInput.value = nutrition.fatGoal || 65;
+    if (waterInput) waterInput.value = store.state.waterGoal || 2500;
+    if (runInput) runInput.value = running.weeklyGoalKm || 20;
+
+    openModal('editHealthGoalsModal');
+    setTimeout(() => { if (calInput) calInput.focus(); }, 60);
+  }
+
+  if (openHealthBtn) openHealthBtn.addEventListener('click', openHealthGoals);
+  if (settingsHealthBtn) settingsHealthBtn.addEventListener('click', () => {
+    closeAllModals();
+    setTimeout(openHealthGoals, 120);
+  });
+  if (closeHealthBtn) closeHealthBtn.addEventListener('click', () => closeAllModals());
+
+  if (saveHealthBtn) {
+    saveHealthBtn.addEventListener('click', () => {
+      const cals = parseInt(calInput.value, 10);
+      const prot = parseInt(protInput.value, 10);
+      const carbs = parseInt(carbInput.value, 10);
+      const fat = parseInt(fatInput.value, 10);
+      const water = parseInt(waterInput.value, 10);
+      const runKm = parseFloat(runInput.value);
+
+      if (!cals || cals <= 0) return;
+
+      if (!store.state.health) store.state.health = {};
+      if (!store.state.health.nutrition) store.state.health.nutrition = {};
+      if (!store.state.health.running) store.state.health.running = {};
+
+      store.state.health.nutrition.calorieGoal = cals;
+      if (prot > 0) store.state.health.nutrition.proteinGoal = prot;
+      if (carbs > 0) store.state.health.nutrition.carbGoal = carbs;
+      if (fat > 0) store.state.health.nutrition.fatGoal = fat;
+      if (water > 0) store.state.waterGoal = water;
+      if (runKm > 0) store.state.health.running.weeklyGoalKm = runKm;
+
+      store.save();
+      sound.playSuccessChime();
+      closeAllModals();
+      renderHealthDiet();
+      renderHealthRunning();
+      renderWaterTracker();
+      renderActivityRings();
+    });
+  }
+
+  // 2. Finance Goals Modal
+  const openFinanceBtn = document.getElementById('openEditFinanceGoalsBtn');
+  const settingsFinanceBtn = document.getElementById('settingsFinanceGoalsBtn');
+  const closeFinanceBtn = document.getElementById('closeFinanceGoalsModal');
+  const saveFinanceBtn = document.getElementById('saveFinanceGoalsBtn');
+
+  const budgetInput = document.getElementById('goalMonthlyBudgetInput');
+  const savingsInput = document.getElementById('goalMonthlySavingsInput');
+
+  function openFinanceGoals() {
+    sound.playPop();
+    const fin = store.state.finance || {};
+    if (budgetInput) budgetInput.value = fin.monthlyBudget || 5000;
+    if (savingsInput) savingsInput.value = fin.savingsGoal || 1500;
+
+    openModal('editFinanceGoalsModal');
+    setTimeout(() => { if (budgetInput) budgetInput.focus(); }, 60);
+  }
+
+  if (openFinanceBtn) openFinanceBtn.addEventListener('click', openFinanceGoals);
+  if (settingsFinanceBtn) settingsFinanceBtn.addEventListener('click', () => {
+    closeAllModals();
+    setTimeout(openFinanceGoals, 120);
+  });
+  if (closeFinanceBtn) closeFinanceBtn.addEventListener('click', () => closeAllModals());
+
+  if (saveFinanceBtn) {
+    saveFinanceBtn.addEventListener('click', () => {
+      const budget = parseFloat(budgetInput.value);
+      const savings = parseFloat(savingsInput.value);
+
+      if (isNaN(budget) || budget < 0) return;
+
+      if (!store.state.finance) store.state.finance = {};
+      store.state.finance.monthlyBudget = budget;
+      if (!isNaN(savings) && savings >= 0) store.state.finance.savingsGoal = savings;
+
+      store.save();
+      sound.playSuccessChime();
+      closeAllModals();
+      renderFinanceHub();
+    });
+  }
+
+  // 3. Knowledge Goals Modal
+  const openKnowledgeBtn = document.getElementById('openEditKnowledgeGoalsBtn');
+  const settingsKnowledgeBtn = document.getElementById('settingsKnowledgeGoalsBtn');
+  const closeKnowledgeBtn = document.getElementById('closeKnowledgeGoalsModal');
+  const saveKnowledgeBtn = document.getElementById('saveKnowledgeGoalsBtn');
+
+  const booksGoalInput = document.getElementById('goalBooksYearInput');
+  const dailyPagesInput = document.getElementById('goalDailyPagesInput');
+
+  function openKnowledgeGoals() {
+    sound.playPop();
+    const know = store.state.knowledge || {};
+    if (booksGoalInput) booksGoalInput.value = know.booksGoalYear || 12;
+    if (dailyPagesInput) dailyPagesInput.value = know.dailyPagesGoal || 20;
+
+    openModal('editKnowledgeGoalsModal');
+    setTimeout(() => { if (booksGoalInput) booksGoalInput.focus(); }, 60);
+  }
+
+  if (openKnowledgeBtn) openKnowledgeBtn.addEventListener('click', openKnowledgeGoals);
+  if (settingsKnowledgeBtn) settingsKnowledgeBtn.addEventListener('click', () => {
+    closeAllModals();
+    setTimeout(openKnowledgeGoals, 120);
+  });
+  if (closeKnowledgeBtn) closeKnowledgeBtn.addEventListener('click', () => closeAllModals());
+
+  if (saveKnowledgeBtn) {
+    saveKnowledgeBtn.addEventListener('click', () => {
+      const booksYear = parseInt(booksGoalInput.value, 10);
+      const pagesDaily = parseInt(dailyPagesInput.value, 10);
+
+      if (!booksYear || booksYear <= 0) return;
+
+      if (!store.state.knowledge) store.state.knowledge = {};
+      store.state.knowledge.booksGoalYear = booksYear;
+      if (pagesDaily > 0) store.state.knowledge.dailyPagesGoal = pagesDaily;
+
+      store.save();
+      sound.playSuccessChime();
+      closeAllModals();
+      renderKnowledgeBooks();
+    });
+  }
+
+  // 4. Focus Goals Modal
+  const openFocusBtn = document.getElementById('openEditFocusGoalsBtn');
+  const settingsFocusBtn = document.getElementById('settingsFocusGoalsBtn');
+  const closeFocusBtn = document.getElementById('closeFocusGoalsModal');
+  const saveFocusBtn = document.getElementById('saveFocusGoalsBtn');
+
+  const focusCyclesInput = document.getElementById('goalFocusCyclesInput');
+
+  function openFocusGoals() {
+    sound.playPop();
+    const foc = store.state.focus || {};
+    if (focusCyclesInput) focusCyclesInput.value = foc.dailyCyclesGoal || 4;
+
+    openModal('editFocusGoalsModal');
+    setTimeout(() => { if (focusCyclesInput) focusCyclesInput.focus(); }, 60);
+  }
+
+  if (openFocusBtn) openFocusBtn.addEventListener('click', openFocusGoals);
+  if (settingsFocusBtn) settingsFocusBtn.addEventListener('click', () => {
+    closeAllModals();
+    setTimeout(openFocusGoals, 120);
+  });
+  if (closeFocusBtn) closeFocusBtn.addEventListener('click', () => closeAllModals());
+
+  if (saveFocusBtn) {
+    saveFocusBtn.addEventListener('click', () => {
+      const cycles = parseInt(focusCyclesInput.value, 10);
+      if (!cycles || cycles <= 0) return;
+
+      if (!store.state.focus) store.state.focus = {};
+      store.state.focus.dailyCyclesGoal = cycles;
+
+      store.save();
+      sound.playSuccessChime();
+      closeAllModals();
+      renderFocusKpis();
+    });
+  }
+}
+
 // =============================================================================
 // 10. HELPERS & FORMATTERS
 // =============================================================================
@@ -4359,8 +4615,11 @@ function renderFocusKpis() {
   const elTotalMin = document.getElementById('focusTotalMinutesVal');
   const elActiveDays = document.getElementById('focusActiveDaysVal');
 
-  if (elTodayKpi) elTodayKpi.textContent = `${todayCycles} períodos`;
-  if (elTodayMin) elTodayMin.textContent = `${todayMinutes} minutos acumulados hoje`;
+  const dailyCyclesGoal = (store.state.focus && store.state.focus.dailyCyclesGoal) ? store.state.focus.dailyCyclesGoal : 4;
+  const cyclePct = Math.min(100, Math.round((todayCycles / dailyCyclesGoal) * 100));
+
+  if (elTodayKpi) elTodayKpi.textContent = `${todayCycles} / ${dailyCyclesGoal} períodos`;
+  if (elTodayMin) elTodayMin.textContent = `${todayMinutes} minutos acumulados (${cyclePct}% da meta)`;
   if (elAvgDaily) elAvgDaily.textContent = `${avgDailyMin} min/dia`;
   if (elTotalSessions) elTotalSessions.textContent = `${totalCycles}`;
   if (elTotalMin) elTotalMin.textContent = `${totalMinutes} min em ${totalCycles} sessões`;

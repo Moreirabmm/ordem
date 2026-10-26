@@ -283,7 +283,7 @@
                   </span>
                   <div>
                     <h3 class="card-title">Hidratação</h3>
-                    <p class="card-subtitle"><span id="waterCount">0</span> / 2.500 ml</p>
+                    <p class="card-subtitle"><span id="waterCount">0</span> / <span id="waterGoalDisplay">2.500</span> ml</p>
                   </div>
                 </div>
                 <button id="addWaterBtn" class="pill-btn tint-teal-btn">+250ml</button>
@@ -378,6 +378,7 @@
               <p class="date-subtitle">Modo de Concentração & Metrificação</p>
               <h1 class="page-title">Sessão de Foco & Pomodoro</h1>
             </div>
+            <button id="openEditFocusGoalsBtn" class="apple-secondary-btn-sm">⚙️ Meta Diária de Foco</button>
           </div>
 
           <!-- Focus KPI Summary Strip -->
@@ -760,6 +761,17 @@
                 <span class="finance-kpi-val val-balance" id="financeNetBalanceVal">R$ 0,00</span>
                 <span class="finance-kpi-sub" id="financeSavingsRateVal">Taxa de Poupança: 0%</span>
               </div>
+              <div class="finance-kpi-card" id="financeBudgetKpiCard">
+                <span class="finance-kpi-label">
+                  <span class="area-dot" style="background: var(--accent-orange);"></span>
+                  Teto de Gastos (Orçamento)
+                </span>
+                <span class="finance-kpi-val" id="financeBudgetVal">R$ 0,00</span>
+                <div class="macro-bar-track" style="margin-top: 6px; height: 6px;">
+                  <div id="financeBudgetBar" class="macro-bar-fill" style="width: 0%; background: var(--accent-orange);"></div>
+                </div>
+                <span class="finance-kpi-sub" id="financeBudgetSub">0% do teto mensal utilizado</span>
+              </div>
             </div>
 
             <!-- Toolbar & Filter -->
@@ -781,7 +793,10 @@
                   <option value="Outros">Outros</option>
                 </select>
               </div>
-              <button id="openNewTransactionModalBtn" class="apple-primary-btn-sm">+ Nova Transação</button>
+              <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                <button id="openEditFinanceGoalsBtn" class="apple-secondary-btn-sm">⚙️ Ajustar Metas</button>
+                <button id="openNewTransactionModalBtn" class="apple-primary-btn-sm">+ Nova Transação</button>
+              </div>
             </div>
 
             <!-- Spreadsheet Ledger Table -->
@@ -836,7 +851,10 @@
                     <h3 class="card-title">Metas Nutricionais Diárias</h3>
                     <p class="card-subtitle">Equilíbrio energético e macronutrientes</p>
                   </div>
-                  <button id="openNewMealModalBtn" class="apple-primary-btn-sm">+ Nova Refeição</button>
+                  <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <button id="openEditNutritionGoalsBtn" class="apple-secondary-btn-sm">⚙️ Ajustar Metas</button>
+                    <button id="openNewMealModalBtn" class="apple-primary-btn-sm">+ Nova Refeição</button>
+                  </div>
                 </div>
 
                 <div class="macro-grid">
@@ -979,7 +997,7 @@
                     Páginas Lidas
                   </span>
                   <span class="finance-kpi-val" id="booksPagesReadVal" style="color: var(--accent-blue);">0</span>
-                  <span class="finance-kpi-sub">Volume total registrado</span>
+                  <span class="finance-kpi-sub" id="booksPagesSub">Volume total registrado</span>
                 </div>
                 <div class="finance-kpi-card">
                   <span class="finance-kpi-label">
@@ -987,14 +1005,17 @@
                     Livros Concluídos
                   </span>
                   <span class="finance-kpi-val" id="booksCompletedCountVal" style="color: var(--accent-green);">0</span>
-                  <span class="finance-kpi-sub">Obras finalizadas com sucesso</span>
+                  <span class="finance-kpi-sub" id="booksCompletedSub">Obras finalizadas com sucesso</span>
                 </div>
               </div>
 
               <!-- Books Header -->
               <div class="section-header">
                 <h3 class="section-title">Minha Estante de Livros</h3>
-                <button id="openNewBookModalBtn" class="apple-primary-btn-sm">+ Novo Livro</button>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                  <button id="openEditKnowledgeGoalsBtn" class="apple-secondary-btn-sm">⚙️ Metas de Leitura</button>
+                  <button id="openNewBookModalBtn" class="apple-primary-btn-sm">+ Novo Livro</button>
+                </div>
               </div>
 
               <!-- Books Grid -->
@@ -1846,6 +1867,17 @@
         </div>
 
         <div class="settings-section">
+          <h4>Metas & Objetivos das Áreas</h4>
+          <p class="settings-desc">Personalize suas metas diárias e limites de cada área da sua vida.</p>
+          <div class="settings-buttons-row" style="flex-wrap: wrap;">
+            <button id="settingsHealthGoalsBtn" class="apple-secondary-btn" style="flex: 1 1 45%;">🍏 Saúde & Dieta</button>
+            <button id="settingsFinanceGoalsBtn" class="apple-secondary-btn" style="flex: 1 1 45%;">💰 Finanças & Orçamento</button>
+            <button id="settingsKnowledgeGoalsBtn" class="apple-secondary-btn" style="flex: 1 1 45%;">📚 Leitura & Estudo</button>
+            <button id="settingsFocusGoalsBtn" class="apple-secondary-btn" style="flex: 1 1 45%;">⏱️ Meta de Foco</button>
+          </div>
+        </div>
+
+        <div class="settings-section">
           <h4>Limpeza & Demonstração</h4>
           <p class="settings-desc">Você pode zerar completamente sua base para começar do zero ou carregar exemplos.</p>
           <div class="settings-buttons-row">
@@ -2008,6 +2040,135 @@
             <span>Sair desta Conta (Logout)</span>
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL 19: METAS DE SAÚDE, NUTRIÇÃO & ÁGUA      -->
+  <!-- ============================================== -->
+  <div id="editHealthGoalsModal" class="modal-backdrop">
+    <div class="modal-card spotlight-card">
+      <div class="spotlight-header">
+        <h3 class="modal-title">Personalizar Metas de Saúde & Dieta</h3>
+        <button class="close-modal-btn" id="closeHealthGoalsModal">&times;</button>
+      </div>
+      <div class="modal-body-fields">
+        <p class="modal-section-hint">Defina suas metas diárias de calorias, macronutrientes, hidratação e corrida.</p>
+
+        <div class="form-group">
+          <label for="goalCaloriesInput">Meta Calórica Diária (kcal)</label>
+          <input type="number" id="goalCaloriesInput" class="apple-input" placeholder="Ex: 2200" min="500" max="10000" step="50">
+        </div>
+
+        <div class="modal-options-row" style="padding: 0;">
+          <div class="option-field">
+            <label for="goalProteinInput">Proteínas (g)</label>
+            <input type="number" id="goalProteinInput" class="apple-input" placeholder="Ex: 150" min="10" max="500" step="5">
+          </div>
+          <div class="option-field">
+            <label for="goalCarbsInput">Carboidratos (g)</label>
+            <input type="number" id="goalCarbsInput" class="apple-input" placeholder="Ex: 220" min="10" max="1000" step="5">
+          </div>
+        </div>
+
+        <div class="modal-options-row" style="padding: 0;">
+          <div class="option-field">
+            <label for="goalFatInput">Gorduras (g)</label>
+            <input type="number" id="goalFatInput" class="apple-input" placeholder="Ex: 65" min="5" max="300" step="5">
+          </div>
+          <div class="option-field">
+            <label for="goalWaterInput">Meta de Água (ml)</label>
+            <input type="number" id="goalWaterInput" class="apple-input" placeholder="Ex: 2500" min="500" max="10000" step="250">
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-top: 8px;">
+          <label for="goalRunningInput">Meta Semanal de Cardio / Corrida (km)</label>
+          <input type="number" id="goalRunningInput" class="apple-input" placeholder="Ex: 20" min="1" max="200" step="0.5">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="saveHealthGoalsBtn" class="apple-primary-btn full-width">Salvar Metas de Saúde</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL 20: METAS FINANCEIRAS & ORÇAMENTO        -->
+  <!-- ============================================== -->
+  <div id="editFinanceGoalsModal" class="modal-backdrop">
+    <div class="modal-card spotlight-card">
+      <div class="spotlight-header">
+        <h3 class="modal-title">Personalizar Metas Financeiras</h3>
+        <button class="close-modal-btn" id="closeFinanceGoalsModal">&times;</button>
+      </div>
+      <div class="modal-body-fields">
+        <p class="modal-section-hint">Defina seu teto de gastos e sua meta de economia mensal para manter seu orçamento protegido.</p>
+
+        <div class="form-group">
+          <label for="goalMonthlyBudgetInput">Teto de Gastos Mensal / Orçamento Máximo (R$)</label>
+          <input type="number" id="goalMonthlyBudgetInput" class="apple-input" placeholder="Ex: 5000" min="0" step="100">
+        </div>
+
+        <div class="form-group">
+          <label for="goalMonthlySavingsInput">Meta de Poupança / Investimento Mensal (R$)</label>
+          <input type="number" id="goalMonthlySavingsInput" class="apple-input" placeholder="Ex: 1500" min="0" step="50">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="saveFinanceGoalsBtn" class="apple-primary-btn full-width">Salvar Metas Financeiras</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL 21: METAS DE LEITURA & CONHECIMENTO       -->
+  <!-- ============================================== -->
+  <div id="editKnowledgeGoalsModal" class="modal-backdrop">
+    <div class="modal-card spotlight-card">
+      <div class="spotlight-header">
+        <h3 class="modal-title">Personalizar Metas de Leitura</h3>
+        <button class="close-modal-btn" id="closeKnowledgeGoalsModal">&times;</button>
+      </div>
+      <div class="modal-body-fields">
+        <p class="modal-section-hint">Defina seus objetivos intelectuais para manter a consistência de leitura e aprendizado.</p>
+
+        <div class="form-group">
+          <label for="goalBooksYearInput">Meta Anual de Livros (livros no ano)</label>
+          <input type="number" id="goalBooksYearInput" class="apple-input" placeholder="Ex: 12" min="1" max="100" step="1">
+        </div>
+
+        <div class="form-group">
+          <label for="goalDailyPagesInput">Meta Diária de Páginas (páginas/dia)</label>
+          <input type="number" id="goalDailyPagesInput" class="apple-input" placeholder="Ex: 20" min="1" max="500" step="5">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="saveKnowledgeGoalsBtn" class="apple-primary-btn full-width">Salvar Metas de Leitura</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL 22: META DIÁRIA DE FOCO & POMODORO       -->
+  <!-- ============================================== -->
+  <div id="editFocusGoalsModal" class="modal-backdrop">
+    <div class="modal-card spotlight-card">
+      <div class="spotlight-header">
+        <h3 class="modal-title">Meta Diária de Foco & Produtividade</h3>
+        <button class="close-modal-btn" id="closeFocusGoalsModal">&times;</button>
+      </div>
+      <div class="modal-body-fields">
+        <p class="modal-section-hint">Defina quantos ciclos de foco profundo você deseja atingir todos os dias (cada ciclo padrão = 25 min).</p>
+
+        <div class="form-group">
+          <label for="goalFocusCyclesInput">Ciclos de Foco por Dia (Pomodoros)</label>
+          <input type="number" id="goalFocusCyclesInput" class="apple-input" placeholder="Ex: 4" min="1" max="24" step="1">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="saveFocusGoalsBtn" class="apple-primary-btn full-width">Salvar Meta de Foco</button>
       </div>
     </div>
   </div>
