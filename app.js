@@ -170,6 +170,105 @@ const INITIAL_DATA = {
       { id: 'fs8', date: getPastDateString(4), time: '16:30', taskTitle: 'Auditoria de processos', durationMinutes: 25, mode: 'Foco 25m' }
     ]
   },
+  quests: {
+    totalXp: 650,
+    dreams: [
+      {
+        id: 'd1',
+        title: 'Conhecer o Japão na Primavera (Tokyo & Kyoto)',
+        category: 'travel',
+        targetYear: '2027',
+        estimatedCost: 28000.00,
+        savedAmount: 12500.00,
+        completed: false,
+        milestones: [
+          { id: 'm1', title: 'Renovar passaporte brasileiro', done: true },
+          { id: 'm2', title: 'Definir cidades e roteiro de 15 dias', done: true },
+          { id: 'm3', title: 'Atingir 70% da reserva financeira da viagem', done: false },
+          { id: 'm4', title: 'Emitir passagens aéreas e reservar hotéis', done: false }
+        ],
+        notes: 'Ver as cerejeiras em flor, subir ao Monte Fuji e mergulhar na cultura milenar.'
+      },
+      {
+        id: 'd2',
+        title: 'Comprar o Primeiro Imóvel / Apartamento Próprio',
+        category: 'lifestyle',
+        targetYear: '2028',
+        estimatedCost: 120000.00,
+        savedAmount: 48000.00,
+        completed: false,
+        milestones: [
+          { id: 'm1', title: 'Estudar bairros estratégicos e valor do m²', done: true },
+          { id: 'm2', title: 'Guardar reserva de entrada de R$ 100k', done: false },
+          { id: 'm3', title: 'Simular crédito imobiliário nos principais bancos', done: false }
+        ],
+        notes: 'Apartamento aconchegante em bairro tranquilo para construir um lar sólido.'
+      },
+      {
+        id: 'd3',
+        title: 'Fluência em Inglês (Conversação Internacional)',
+        category: 'career',
+        targetYear: '2026',
+        estimatedCost: 0,
+        savedAmount: 0,
+        completed: true,
+        completedDate: '2026-08-15',
+        milestones: [
+          { id: 'm1', title: 'Completar curso avançado de gramática', done: true },
+          { id: 'm2', title: 'Praticar conversação semanal por 6 meses', done: true },
+          { id: 'm3', title: 'Fazer apresentação de trabalho 100% em inglês', done: true }
+        ],
+        notes: 'Conquistado! Apresentação executiva internacional realizada com sucesso.'
+      }
+    ],
+    sideQuests: [
+      {
+        id: 'sq1',
+        title: 'Desafio Sem Açúcar Refinado (14 Dias)',
+        desc: 'Corte refrigerantes, doces e ultraprocessados para resetar o paladar e aumentar sua energia vital.',
+        difficulty: 'medium',
+        xpReward: 200,
+        category: 'health',
+        currentDays: 8,
+        totalDays: 14,
+        completed: false
+      },
+      {
+        id: 'sq2',
+        title: 'Trilogia Literária Clássica',
+        desc: 'Leia 3 obras seminais em menos de 45 dias sem distrações de telas antes de dormir.',
+        difficulty: 'epic',
+        xpReward: 350,
+        category: 'study',
+        currentDays: 2,
+        totalDays: 3,
+        completed: false
+      },
+      {
+        id: 'sq3',
+        title: 'Desconexão Digital Total por 24 Horas',
+        desc: 'Passe um domingo inteiro sem celular, redes sociais ou telas. Apenas mundo real e presença.',
+        difficulty: 'medium',
+        xpReward: 200,
+        category: 'personal',
+        currentDays: 0,
+        totalDays: 1,
+        completed: false
+      },
+      {
+        id: 'sq4',
+        title: 'Primeiros R$ 10.000 Investidos com Sabedoria',
+        desc: 'Construa uma reserva de emergência ou carteira diversificada atingindo cinco dígitos.',
+        difficulty: 'legendary',
+        xpReward: 500,
+        category: 'finance',
+        currentDays: 1,
+        totalDays: 1,
+        completed: true,
+        completedDate: '2026-09-10'
+      }
+    ]
+  },
   mindsetQuotes: [
     '"A simplicidade é o grau máximo de sofisticação." — Steve Jobs',
     '"Foco significa dizer não a centenas de outras boas ideias." — Steve Jobs',
@@ -252,6 +351,11 @@ function getEmptyUserData() {
       activeTaskId: null,
       tasks: [],
       sessions: []
+    },
+    quests: {
+      totalXp: 0,
+      dreams: [],
+      sideQuests: []
     },
     mindsetQuotes: [
       '"A simplicidade é o grau máximo de sofisticação." — Steve Jobs',
@@ -382,6 +486,10 @@ class Store {
         if (!parsed.focus.dailyCyclesGoal) parsed.focus.dailyCyclesGoal = 4;
         if (!Array.isArray(parsed.focus.tasks)) parsed.focus.tasks = [];
         if (!Array.isArray(parsed.focus.sessions)) parsed.focus.sessions = [];
+        if (!parsed.quests) parsed.quests = { totalXp: 0, dreams: [], sideQuests: [] };
+        if (!Array.isArray(parsed.quests.dreams)) parsed.quests.dreams = [];
+        if (!Array.isArray(parsed.quests.sideQuests)) parsed.quests.sideQuests = [];
+        if (typeof parsed.quests.totalXp !== 'number') parsed.quests.totalXp = 0;
         if (!Array.isArray(parsed.tasks)) parsed.tasks = [];
         if (!Array.isArray(parsed.habits)) parsed.habits = [];
         if (parsed.water === undefined) parsed.water = 0;
@@ -485,6 +593,28 @@ class AudioFeedback {
           gain.connect(this.ctx.destination);
           osc.start(now + i * 0.07);
           osc.stop(now + i * 0.07 + 0.36);
+        });
+      } catch (e) {}
+    }, 0);
+  }
+
+  playFanfare() {
+    setTimeout(() => {
+      try {
+        this.init();
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        [440, 554.37, 659.25, 880, 1108.73, 1318.51].forEach((freq, i) => {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(freq, now + i * 0.08);
+          gain.gain.setValueAtTime(0.12, now + i * 0.08);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.45);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start(now + i * 0.08);
+          osc.stop(now + i * 0.08 + 0.46);
         });
       } catch (e) {}
     }, 0);
@@ -732,6 +862,9 @@ document.addEventListener('DOMContentLoaded', () => {
   setupFinanceModals();
   setupInvestmentModals();
 
+  // Event Listeners: Dreams, Goals & Side Quests Modals
+  setupQuestModals();
+
   // Event Listeners: Knowledge & Reading Tracker Modals
   setupKnowledgeModals();
 
@@ -845,6 +978,11 @@ function renderAll() {
   const focusView = document.getElementById('viewFocus');
   if (focusView && focusView.classList.contains('active-view')) {
     renderFocusSection();
+  }
+
+  const questsView = document.getElementById('viewQuests');
+  if (questsView && questsView.classList.contains('active-view')) {
+    renderQuestsHub();
   }
 }
 
@@ -1047,6 +1185,13 @@ function renderCounts() {
   document.getElementById('countFinance').textContent = counts.finance;
   document.getElementById('countStudy').textContent = counts.study;
   document.getElementById('countPersonal').textContent = counts.personal;
+
+  const levelBadge = document.getElementById('questsNavLevelBadge');
+  if (levelBadge) {
+    const totalXp = (store.state.quests && store.state.quests.totalXp) ? store.state.quests.totalXp : 0;
+    const levelInfo = getUserLevelInfo(totalXp);
+    levelBadge.textContent = `Nv. ${levelInfo.level}`;
+  }
 }
 
 /**
@@ -1374,6 +1519,9 @@ function switchTab(tabName) {
   } else if (tabName === 'habits') {
     document.getElementById('viewHabits').classList.add('active-view');
     renderFullHabits();
+  } else if (tabName === 'quests') {
+    document.getElementById('viewQuests').classList.add('active-view');
+    renderQuestsHub();
   }
 }
 
@@ -5131,6 +5279,665 @@ function setupGoalsModals() {
       closeAllModals();
       renderFocusKpis();
     });
+  }
+}
+
+// =============================================================================
+// DREAMS, LIFE GOALS & SIDE QUESTS (APPLE HUMAN INTERFACE GAMIFICATION)
+// =============================================================================
+
+let activeQuestsSubtab = 'dreams';
+let dreamsCurrentCategoryFilter = 'all';
+let questsCurrentDifficultyFilter = 'all';
+
+const QUEST_LEVELS = [
+  { minXp: 0, maxXp: 300, level: 1, title: 'Iniciante da Jornada', icon: '🥉' },
+  { minXp: 300, maxXp: 750, level: 2, title: 'Explorador de Hábitos', icon: '🥈' },
+  { minXp: 750, maxXp: 1400, level: 3, title: 'Foco Estratégico', icon: '🥇' },
+  { minXp: 1400, maxXp: 2400, level: 4, title: 'Conquistador de Metas', icon: '💎' },
+  { minXp: 2400, maxXp: 3800, level: 5, title: 'Mestre da Disciplina', icon: '⚡' },
+  { minXp: 3800, maxXp: 5600, level: 6, title: 'Arquiteto do Futuro', icon: '🌟' },
+  { minXp: 5600, maxXp: 8000, level: 7, title: 'Titã de Alta Performance', icon: '👑' },
+  { minXp: 8000, maxXp: Infinity, level: 8, title: 'Lenda Viva', icon: '🌌' }
+];
+
+const DREAM_CATEGORIES = {
+  travel: { label: 'Viagens & Aventuras', icon: '✈️' },
+  lifestyle: { label: 'Estilo de Vida & Bens', icon: '🏡' },
+  career: { label: 'Carreira & Negócios', icon: '💼' },
+  finance: { label: 'Metas Financeiras', icon: '💰' },
+  experience: { label: 'Experiências Marcantes', icon: '⚡' },
+  personal: { label: 'Desenvolvimento Pessoal', icon: '🌿' }
+};
+
+const QUEST_DIFFICULTIES = {
+  easy: { label: 'Fácil', xp: 100, badgeClass: 'diff-easy' },
+  medium: { label: 'Média', xp: 200, badgeClass: 'diff-medium' },
+  epic: { label: 'Épica', xp: 350, badgeClass: 'diff-epic' },
+  legendary: { label: 'Lendária', xp: 500, badgeClass: 'diff-legendary' }
+};
+
+function getUserLevelInfo(totalXp = 0) {
+  for (let i = QUEST_LEVELS.length - 1; i >= 0; i--) {
+    if (totalXp >= QUEST_LEVELS[i].minXp) {
+      const current = QUEST_LEVELS[i];
+      const range = current.maxXp === Infinity ? 5000 : (current.maxXp - current.minXp);
+      const earnedInRange = totalXp - current.minXp;
+      const pct = Math.min(100, Math.round((earnedInRange / range) * 100));
+      return {
+        level: current.level,
+        title: current.title,
+        icon: current.icon,
+        currentXp: totalXp,
+        minXp: current.minXp,
+        nextXp: current.maxXp,
+        pct: pct
+      };
+    }
+  }
+  return { level: 1, title: 'Iniciante da Jornada', icon: '🥉', currentXp: totalXp, minXp: 0, nextXp: 300, pct: 0 };
+}
+
+function renderQuestsHub() {
+  setupQuestsSubnav();
+
+  const questsData = (store.state.quests) ? store.state.quests : { totalXp: 0, dreams: [], sideQuests: [] };
+  const totalXp = questsData.totalXp || 0;
+  const dreams = questsData.dreams || [];
+  const sideQuests = questsData.sideQuests || [];
+
+  const completedDreams = dreams.filter(d => d.completed);
+  const activeQuests = sideQuests.filter(q => !q.completed);
+  const completedQuests = sideQuests.filter(q => q.completed);
+  const totalHallItems = completedDreams.length + completedQuests.length;
+
+  const levelInfo = getUserLevelInfo(totalXp);
+
+  // Update Hero Level Banner
+  const iconEl = document.getElementById('userLevelIcon');
+  const titleEl = document.getElementById('userLevelTitle');
+  const xpTextEl = document.getElementById('userLevelXpText');
+  const xpBarEl = document.getElementById('userLevelXpBar');
+  const navBadgeEl = document.getElementById('questsNavLevelBadge');
+
+  if (iconEl) iconEl.textContent = levelInfo.icon;
+  if (titleEl) titleEl.textContent = `Nível ${levelInfo.level} • ${levelInfo.title}`;
+  if (xpTextEl) {
+    if (levelInfo.nextXp === Infinity) {
+      xpTextEl.textContent = `${totalXp.toLocaleString('pt-BR')} XP • Nível Máximo Alcançado!`;
+    } else {
+      xpTextEl.textContent = `${totalXp.toLocaleString('pt-BR')} / ${levelInfo.nextXp.toLocaleString('pt-BR')} XP para o próximo nível`;
+    }
+  }
+  if (xpBarEl) xpBarEl.style.width = `${levelInfo.pct}%`;
+  if (navBadgeEl) navBadgeEl.textContent = `Nv. ${levelInfo.level}`;
+
+  // Update KPIs
+  const kpiDreams = document.getElementById('kpiCompletedDreamsVal');
+  const kpiQuests = document.getElementById('kpiActiveQuestsVal');
+  const kpiXp = document.getElementById('kpiTotalXpVal');
+  const kpiHall = document.getElementById('kpiHallOfFameVal');
+
+  if (kpiDreams) kpiDreams.textContent = `${completedDreams.length} / ${dreams.length}`;
+  if (kpiQuests) kpiQuests.textContent = `${activeQuests.length}`;
+  if (kpiXp) kpiXp.textContent = `${totalXp.toLocaleString('pt-BR')} XP`;
+  if (kpiHall) kpiHall.textContent = `${totalHallItems}`;
+
+  renderDreams();
+  renderSideQuests();
+  renderHallOfFame();
+}
+
+function setupQuestsSubnav() {
+  document.querySelectorAll('.quests-subnav-btn').forEach(btn => {
+    btn.onclick = () => {
+      sound.playPop();
+      document.querySelectorAll('.quests-subnav-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeQuestsSubtab = btn.dataset.subtab;
+
+      const vDreams = document.getElementById('questsSubViewDreams');
+      const vQuests = document.getElementById('questsSubViewSideQuests');
+      const vHall = document.getElementById('questsSubViewHall');
+
+      if (vDreams) vDreams.classList.toggle('hidden', activeQuestsSubtab !== 'dreams');
+      if (vQuests) vQuests.classList.toggle('hidden', activeQuestsSubtab !== 'sidequests');
+      if (vHall) vHall.classList.toggle('hidden', activeQuestsSubtab !== 'hall');
+
+      if (activeQuestsSubtab === 'dreams') renderDreams();
+      if (activeQuestsSubtab === 'sidequests') renderSideQuests();
+      if (activeQuestsSubtab === 'hall') renderHallOfFame();
+    };
+  });
+}
+
+function renderDreams() {
+  const container = document.getElementById('dreamsGridContainer');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const questsData = store.state.quests || { dreams: [] };
+  let dreams = [...(questsData.dreams || [])];
+
+  if (dreamsCurrentCategoryFilter !== 'all') {
+    dreams = dreams.filter(d => d.category === dreamsCurrentCategoryFilter);
+  }
+
+  // Filter to show active dreams first
+  dreams.sort((a, b) => (a.completed === b.completed ? 0 : a.completed ? 1 : -1));
+
+  if (dreams.length === 0) {
+    container.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;">Nenhum sonho cadastrado nesta categoria. Clique em "+ Novo Sonho de Vida" para registrar sua próxima grande aspiração.</div>`;
+    return;
+  }
+
+  dreams.forEach(dream => {
+    const card = document.createElement('div');
+    card.className = `dream-card ${dream.completed ? 'completed' : ''}`;
+
+    const catMeta = DREAM_CATEGORIES[dream.category] || { label: 'Sonho', icon: '🌟' };
+    const hasCost = dream.estimatedCost && dream.estimatedCost > 0;
+    const saved = dream.savedAmount || 0;
+    const costPct = hasCost ? Math.min(100, Math.round((saved / dream.estimatedCost) * 100)) : 0;
+    const milestones = dream.milestones || [];
+    const doneMilestones = milestones.filter(m => m.done).length;
+
+    let savingsHtml = '';
+    if (hasCost) {
+      savingsHtml = `
+        <div class="dream-savings-box">
+          <div class="dream-savings-header">
+            <span>🐷 Reserva Financeira</span>
+            <span>${formatBRL(saved)} / ${formatBRL(dream.estimatedCost)} (${costPct}%)</span>
+          </div>
+          <div class="progress-bar-track" style="height: 6px;">
+            <div class="progress-bar-fill" style="width: ${costPct}%; background: var(--accent-orange);"></div>
+          </div>
+        </div>
+      `;
+    }
+
+    let milestonesHtml = '';
+    if (milestones.length > 0) {
+      milestonesHtml = `
+        <div style="font-size: 11px; font-weight: 600; color: var(--text-tertiary); margin-bottom: 6px; text-transform: uppercase;">Marcos & Etapas (${doneMilestones}/${milestones.length})</div>
+        <div class="dream-milestones-list">
+          ${milestones.map((m, idx) => `
+            <div class="dream-milestone-item ${m.done ? 'done' : ''}" data-dream-id="${dream.id}" data-milestone-idx="${idx}">
+              <div class="milestone-check">${m.done ? '✓' : ''}</div>
+              <span>${escapeHtml(m.title)}</span>
+            </div>
+          `).join('')}
+        </div>
+      `;
+    }
+
+    card.innerHTML = `
+      <div>
+        <div class="dream-card-top">
+          <span class="dream-badge-category">${catMeta.icon} ${catMeta.label}</span>
+          <span class="dream-badge-year">${escapeHtml(dream.targetYear || 'Meta de Vida')}</span>
+        </div>
+        <div class="dream-card-title">${escapeHtml(dream.title)}</div>
+        ${dream.notes ? `<div class="dream-card-notes">${escapeHtml(dream.notes)}</div>` : ''}
+        ${savingsHtml}
+        ${milestonesHtml}
+      </div>
+      <div class="dream-card-footer">
+        <div>
+          ${dream.completed ? `
+            <span class="badge-income" style="font-size: 11px;">🎉 Realizado</span>
+          ` : `
+            <button class="apple-primary-btn-sm complete-dream-btn" style="font-size: 11px; padding: 4px 10px;">🏆 Realizar Sonho (+300 XP)</button>
+          `}
+        </div>
+        <div style="display: flex; gap: 4px;">
+          <button class="icon-btn edit-dream-btn" title="Editar Sonho" style="background: none; border: none; cursor: pointer; color: var(--text-secondary); padding: 4px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+          </button>
+          <button class="task-delete-btn delete-dream-btn" title="Excluir Sonho">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    `;
+
+    // Interactive Milestones Checkbox
+    card.querySelectorAll('.dream-milestone-item').forEach(item => {
+      item.onclick = (e) => {
+        e.stopPropagation();
+        const mIdx = parseInt(item.dataset.milestoneIdx, 10);
+        sound.playPop();
+        dream.milestones[mIdx].done = !dream.milestones[mIdx].done;
+        store.save();
+        renderDreams();
+      };
+    });
+
+    // Complete Dream Button
+    const completeBtn = card.querySelector('.complete-dream-btn');
+    if (completeBtn) {
+      completeBtn.onclick = (e) => {
+        e.stopPropagation();
+        sound.playFanfare();
+        dream.completed = true;
+        dream.completedDate = getTodayString();
+        store.state.quests.totalXp = (store.state.quests.totalXp || 0) + 300;
+        store.save();
+        alert(`🌟 PARABÉNS! Você conquistou o sonho: "${dream.title}"! (+300 XP concedidos)`);
+        renderQuestsHub();
+      };
+    }
+
+    // Edit Dream Button
+    card.querySelector('.edit-dream-btn').onclick = (e) => {
+      e.stopPropagation();
+      sound.playPop();
+      openEditDreamModal(dream);
+    };
+
+    // Delete Dream Button
+    card.querySelector('.delete-dream-btn').onclick = (e) => {
+      e.stopPropagation();
+      if (confirm(`Excluir o sonho "${dream.title}"?`)) {
+        sound.playPop();
+        store.state.quests.dreams = store.state.quests.dreams.filter(d => d.id !== dream.id);
+        store.save();
+        renderQuestsHub();
+      }
+    };
+
+    container.appendChild(card);
+  });
+}
+
+function renderSideQuests() {
+  const container = document.getElementById('sideQuestsGridContainer');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const questsData = store.state.quests || { sideQuests: [] };
+  let sideQuests = [...(questsData.sideQuests || [])];
+
+  if (questsCurrentDifficultyFilter !== 'all') {
+    sideQuests = sideQuests.filter(q => q.difficulty === questsCurrentDifficultyFilter);
+  }
+
+  // Sort active first
+  sideQuests.sort((a, b) => (a.completed === b.completed ? 0 : a.completed ? 1 : -1));
+
+  if (sideQuests.length === 0) {
+    container.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;">Nenhuma side quest ativa no momento. Clique em "⚔️ Nova Side Quest" para criar um novo desafio.</div>`;
+    return;
+  }
+
+  sideQuests.forEach(quest => {
+    const card = document.createElement('div');
+    card.className = `sidequest-card ${quest.completed ? 'completed' : ''}`;
+
+    const diffMeta = QUEST_DIFFICULTIES[quest.difficulty] || QUEST_DIFFICULTIES.medium;
+    const cur = parseInt(quest.currentDays, 10) || 0;
+    const total = parseInt(quest.totalDays, 10) || 1;
+    const pct = Math.min(100, Math.round((cur / total) * 100));
+
+    card.innerHTML = `
+      <div>
+        <div class="sidequest-card-top">
+          <span class="diff-badge ${diffMeta.badgeClass}">${diffMeta.label}</span>
+          <span class="xp-reward-badge">⚡ +${quest.xpReward || diffMeta.xp} XP</span>
+        </div>
+        <div class="sidequest-title">${escapeHtml(quest.title)}</div>
+        <div class="sidequest-desc">${escapeHtml(quest.desc || '')}</div>
+        
+        <div class="sidequest-progress-box">
+          <div class="sidequest-progress-lbl">
+            <span>Progresso</span>
+            <span>${cur} / ${total} (${pct}%)</span>
+          </div>
+          <div class="progress-bar-track" style="height: 6px;">
+            <div class="progress-bar-fill" style="width: ${pct}%; background: var(--accent-purple);"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidequest-footer">
+        <div>
+          ${quest.completed ? `
+            <span class="badge-income" style="font-size: 11px;">⚔️ Missão Cumprida</span>
+          ` : `
+            <button class="apple-secondary-btn-sm advance-quest-btn" style="font-size: 11px;">+1 Passo</button>
+            <button class="apple-primary-btn-sm finish-quest-btn" style="font-size: 11px; margin-left: 6px;">Concluir 🏆</button>
+          `}
+        </div>
+        <div style="display: flex; gap: 4px;">
+          <button class="icon-btn edit-quest-btn" title="Editar Quest" style="background: none; border: none; cursor: pointer; color: var(--text-secondary); padding: 4px;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+          </button>
+          <button class="task-delete-btn delete-quest-btn" title="Excluir Quest">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+          </button>
+        </div>
+      </div>
+    `;
+
+    // Advance 1 Step
+    const advBtn = card.querySelector('.advance-quest-btn');
+    if (advBtn) {
+      advBtn.onclick = (e) => {
+        e.stopPropagation();
+        sound.playPop();
+        quest.currentDays = Math.min(total, cur + 1);
+        if (quest.currentDays >= total) {
+          quest.completed = true;
+          quest.completedDate = getTodayString();
+          sound.playFanfare();
+          store.state.quests.totalXp = (store.state.quests.totalXp || 0) + (quest.xpReward || diffMeta.xp);
+          alert(`⚔️ MISSÃO CUMPRIDA! Você completou: "${quest.title}"! (+${quest.xpReward || diffMeta.xp} XP)`);
+        }
+        store.save();
+        renderQuestsHub();
+      };
+    }
+
+    // Finish quest directly
+    const finishBtn = card.querySelector('.finish-quest-btn');
+    if (finishBtn) {
+      finishBtn.onclick = (e) => {
+        e.stopPropagation();
+        sound.playFanfare();
+        quest.currentDays = total;
+        quest.completed = true;
+        quest.completedDate = getTodayString();
+        store.state.quests.totalXp = (store.state.quests.totalXp || 0) + (quest.xpReward || diffMeta.xp);
+        store.save();
+        alert(`⚔️ MISSÃO CUMPRIDA! Você completou: "${quest.title}"! (+${quest.xpReward || diffMeta.xp} XP)`);
+        renderQuestsHub();
+      };
+    }
+
+    // Edit Quest
+    card.querySelector('.edit-quest-btn').onclick = (e) => {
+      e.stopPropagation();
+      sound.playPop();
+      openEditSideQuestModal(quest);
+    };
+
+    // Delete Quest
+    card.querySelector('.delete-quest-btn').onclick = (e) => {
+      e.stopPropagation();
+      if (confirm(`Excluir a side quest "${quest.title}"?`)) {
+        sound.playPop();
+        store.state.quests.sideQuests = store.state.quests.sideQuests.filter(q => q.id !== quest.id);
+        store.save();
+        renderQuestsHub();
+      }
+    };
+
+    container.appendChild(card);
+  });
+}
+
+function renderHallOfFame() {
+  const container = document.getElementById('hallOfFameContainer');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const questsData = store.state.quests || { dreams: [], sideQuests: [] };
+  const completedDreams = (questsData.dreams || []).filter(d => d.completed).map(d => ({
+    title: d.title,
+    type: 'Sonho Realizado',
+    icon: '🌟',
+    date: d.completedDate || '2026',
+    xp: '+300 XP'
+  }));
+
+  const completedQuests = (questsData.sideQuests || []).filter(q => q.completed).map(q => ({
+    title: q.title,
+    type: 'Side Quest Conquistada',
+    icon: '⚔️',
+    date: q.completedDate || '2026',
+    xp: `+${q.xpReward || 200} XP`
+  }));
+
+  const hallItems = [...completedDreams, ...completedQuests];
+
+  if (hallItems.length === 0) {
+    container.innerHTML = `<div class="empty-state" style="grid-column: 1/-1;">Nenhuma conquista registrada no Hall da Fama ainda. Realize seus sonhos e complete missões para construir seu legado de conquistas!</div>`;
+    return;
+  }
+
+  hallItems.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'hall-card';
+    card.innerHTML = `
+      <div>
+        <div class="hall-card-header">
+          <span class="hall-trophy-icon">${item.icon}</span>
+          <span class="xp-reward-badge">${item.xp}</span>
+        </div>
+        <div class="hall-card-title">${escapeHtml(item.title)}</div>
+        <div class="hall-card-date">${escapeHtml(item.type)} &bull; ${escapeHtml(item.date)}</div>
+      </div>
+      <span class="hall-stamp">🏆 Conquistado com Honra</span>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function openEditDreamModal(dream) {
+  document.getElementById('dreamModalTitle').textContent = 'Editar Sonho de Vida';
+  document.getElementById('editDreamId').value = dream.id;
+  document.getElementById('dreamTitleInput').value = dream.title;
+  document.getElementById('dreamCategorySelect').value = dream.category || 'travel';
+  document.getElementById('dreamTargetYearInput').value = dream.targetYear || '';
+  document.getElementById('dreamEstimatedCostInput').value = dream.estimatedCost || '';
+  document.getElementById('dreamSavedAmountInput').value = dream.savedAmount || '';
+  document.getElementById('dreamMilestonesInput').value = (dream.milestones || []).map(m => m.title).join('\n');
+  document.getElementById('dreamNotesInput').value = dream.notes || '';
+  openModal('newDreamModal');
+}
+
+function openEditSideQuestModal(quest) {
+  document.getElementById('sideQuestModalTitle').textContent = 'Editar Side Quest';
+  document.getElementById('editSideQuestId').value = quest.id;
+  document.getElementById('sideQuestTitleInput').value = quest.title;
+  document.getElementById('sideQuestDescInput').value = quest.desc || '';
+  document.getElementById('sideQuestDiffSelect').value = quest.difficulty || 'medium';
+  document.getElementById('sideQuestCategorySelect').value = quest.category || 'health';
+  document.getElementById('sideQuestTotalDaysInput').value = quest.totalDays || 14;
+  openModal('newSideQuestModal');
+}
+
+function setupQuestModals() {
+  // New / Edit Dream Modal
+  const openDreamBtn = document.getElementById('openNewDreamModalBtn');
+  const closeDreamBtn = document.getElementById('closeNewDreamModal');
+  const saveDreamBtn = document.getElementById('saveDreamBtn');
+
+  if (openDreamBtn) {
+    openDreamBtn.onclick = () => {
+      sound.playPop();
+      document.getElementById('dreamModalTitle').textContent = 'Novo Sonho de Vida';
+      document.getElementById('editDreamId').value = '';
+      document.getElementById('dreamTitleInput').value = '';
+      document.getElementById('dreamCategorySelect').value = 'travel';
+      document.getElementById('dreamTargetYearInput').value = '';
+      document.getElementById('dreamEstimatedCostInput').value = '';
+      document.getElementById('dreamSavedAmountInput').value = '';
+      document.getElementById('dreamMilestonesInput').value = '';
+      document.getElementById('dreamNotesInput').value = '';
+      openModal('newDreamModal');
+      setTimeout(() => document.getElementById('dreamTitleInput').focus(), 50);
+    };
+  }
+
+  if (closeDreamBtn) closeDreamBtn.onclick = () => closeAllModals();
+
+  if (saveDreamBtn) {
+    saveDreamBtn.onclick = () => {
+      const id = document.getElementById('editDreamId').value;
+      const title = document.getElementById('dreamTitleInput').value.trim();
+      const category = document.getElementById('dreamCategorySelect').value;
+      const targetYear = document.getElementById('dreamTargetYearInput').value.trim();
+      const estimatedCost = parseFloat(document.getElementById('dreamEstimatedCostInput').value) || 0;
+      const savedAmount = parseFloat(document.getElementById('dreamSavedAmountInput').value) || 0;
+      const rawMilestones = document.getElementById('dreamMilestonesInput').value.split('\n').map(m => m.trim()).filter(Boolean);
+      const notes = document.getElementById('dreamNotesInput').value.trim();
+
+      if (!title) {
+        alert('Por favor, informe o título do seu sonho.');
+        return;
+      }
+
+      if (!store.state.quests) store.state.quests = { dreams: [], sideQuests: [], totalXp: 0 };
+      if (!Array.isArray(store.state.quests.dreams)) store.state.quests.dreams = [];
+
+      if (id) {
+        // Edit existing
+        const existing = store.state.quests.dreams.find(d => d.id === id);
+        if (existing) {
+          existing.title = title;
+          existing.category = category;
+          existing.targetYear = targetYear;
+          existing.estimatedCost = estimatedCost;
+          existing.savedAmount = savedAmount;
+          existing.notes = notes;
+          if (rawMilestones.length > 0) {
+            existing.milestones = rawMilestones.map((mTitle, i) => {
+              const old = existing.milestones && existing.milestones[i];
+              return { id: 'm_' + Date.now() + '_' + i, title: mTitle, done: old ? old.done : false };
+            });
+          }
+        }
+      } else {
+        // Create new
+        const newMilestones = rawMilestones.map((mTitle, i) => ({
+          id: 'm_' + Date.now() + '_' + i,
+          title: mTitle,
+          done: false
+        }));
+
+        store.state.quests.dreams.unshift({
+          id: 'd_' + Date.now(),
+          title: title,
+          category: category,
+          targetYear: targetYear || 'Futuro',
+          estimatedCost: estimatedCost,
+          savedAmount: savedAmount,
+          milestones: newMilestones,
+          notes: notes,
+          completed: false
+        });
+      }
+
+      store.save();
+      sound.playSuccessChime();
+      closeAllModals();
+      renderQuestsHub();
+    };
+  }
+
+  // New / Edit Side Quest Modal
+  const openQuestBtn = document.getElementById('openNewSideQuestModalBtn');
+  const closeQuestBtn = document.getElementById('closeNewSideQuestModal');
+  const saveQuestBtn = document.getElementById('saveSideQuestBtn');
+
+  if (openQuestBtn) {
+    openQuestBtn.onclick = () => {
+      sound.playPop();
+      document.getElementById('sideQuestModalTitle').textContent = 'Nova Side Quest';
+      document.getElementById('editSideQuestId').value = '';
+      document.getElementById('sideQuestTitleInput').value = '';
+      document.getElementById('sideQuestDescInput').value = '';
+      document.getElementById('sideQuestDiffSelect').value = 'medium';
+      document.getElementById('sideQuestCategorySelect').value = 'health';
+      document.getElementById('sideQuestTotalDaysInput').value = '14';
+      openModal('newSideQuestModal');
+      setTimeout(() => document.getElementById('sideQuestTitleInput').focus(), 50);
+    };
+  }
+
+  if (closeQuestBtn) closeQuestBtn.onclick = () => closeAllModals();
+
+  if (saveQuestBtn) {
+    saveQuestBtn.onclick = () => {
+      const id = document.getElementById('editSideQuestId').value;
+      const title = document.getElementById('sideQuestTitleInput').value.trim();
+      const desc = document.getElementById('sideQuestDescInput').value.trim();
+      const difficulty = document.getElementById('sideQuestDiffSelect').value;
+      const category = document.getElementById('sideQuestCategorySelect').value;
+      const totalDays = parseInt(document.getElementById('sideQuestTotalDaysInput').value, 10) || 14;
+
+      if (!title) {
+        alert('Por favor, informe o título da Side Quest.');
+        return;
+      }
+
+      const diffMeta = QUEST_DIFFICULTIES[difficulty] || QUEST_DIFFICULTIES.medium;
+
+      if (!store.state.quests) store.state.quests = { dreams: [], sideQuests: [], totalXp: 0 };
+      if (!Array.isArray(store.state.quests.sideQuests)) store.state.quests.sideQuests = [];
+
+      if (id) {
+        // Edit existing
+        const existing = store.state.quests.sideQuests.find(q => q.id === id);
+        if (existing) {
+          existing.title = title;
+          existing.desc = desc;
+          existing.difficulty = difficulty;
+          existing.category = category;
+          existing.totalDays = totalDays;
+          existing.xpReward = diffMeta.xp;
+        }
+      } else {
+        // Create new
+        store.state.quests.sideQuests.unshift({
+          id: 'sq_' + Date.now(),
+          title: title,
+          desc: desc,
+          difficulty: difficulty,
+          category: category,
+          currentDays: 0,
+          totalDays: totalDays,
+          xpReward: diffMeta.xp,
+          completed: false
+        });
+      }
+
+      store.save();
+      sound.playSuccessChime();
+      closeAllModals();
+      renderQuestsHub();
+    };
+  }
+
+  // Filter bindings
+  const dreamsFilter = document.getElementById('dreamsCategoryFilter');
+  if (dreamsFilter) {
+    dreamsFilter.onchange = (e) => {
+      dreamsCurrentCategoryFilter = e.target.value;
+      renderDreams();
+    };
+  }
+
+  const questsFilter = document.getElementById('questsDifficultyFilter');
+  if (questsFilter) {
+    questsFilter.onchange = (e) => {
+      questsCurrentDifficultyFilter = e.target.value;
+      renderSideQuests();
+    };
   }
 }
 

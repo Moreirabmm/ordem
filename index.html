@@ -96,6 +96,13 @@
           </svg>
           <span>Hábitos & Rotina</span>
         </button>
+        <button class="nav-item" data-tab="quests">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+          <span>Sonhos & Side Quests</span>
+          <span class="badge" id="questsNavLevelBadge" style="background: rgba(255, 214, 10, 0.15); color: var(--accent-orange); font-size: 10px; padding: 1px 7px; border-radius: 10px; font-weight: 700;">Nv. 1</span>
+        </button>
       </nav>
 
       <!-- Life Areas Section -->
@@ -598,6 +605,133 @@
           <div class="habits-full-grid" id="allHabitsContainer">
             <!-- Rendered by JS with interactive 7-day checklist and 'Ver Gráfico & Histórico' button -->
           </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- TAB: SONHOS, OBJETIVOS & SIDE QUESTS          -->
+        <!-- ============================================== -->
+        <section id="viewQuests" class="content-view">
+          
+          <!-- Hero Header with User Level & Gamification Banner -->
+          <div class="quests-hero-card glass-card">
+            <div class="quests-hero-header">
+              <div class="quests-level-badge">
+                <span class="quests-level-icon" id="userLevelIcon">🥉</span>
+                <div>
+                  <div class="quests-level-title" id="userLevelTitle">Nível 1 • Iniciante da Jornada</div>
+                  <div class="quests-level-xp-text" id="userLevelXpText">450 / 500 XP para o próximo nível</div>
+                </div>
+              </div>
+              <div class="quests-hero-actions">
+                <button id="openNewDreamModalBtn" class="apple-primary-btn-sm">✨ Novo Sonho de Vida</button>
+                <button id="openNewSideQuestModalBtn" class="apple-secondary-btn-sm">⚔️ Nova Side Quest</button>
+              </div>
+            </div>
+
+            <!-- XP Progress Bar -->
+            <div class="quests-xp-track">
+              <div class="quests-xp-fill" id="userLevelXpBar" style="width: 45%;"></div>
+            </div>
+
+            <!-- Gamification KPI Stats Grid -->
+            <div class="quests-kpi-strip">
+              <div class="quests-kpi-item">
+                <span class="quests-kpi-num" id="kpiCompletedDreamsVal">0</span>
+                <span class="quests-kpi-lbl">Sonhos Realizados</span>
+              </div>
+              <div class="quests-kpi-item">
+                <span class="quests-kpi-num" id="kpiActiveQuestsVal">0</span>
+                <span class="quests-kpi-lbl">Side Quests Ativas</span>
+              </div>
+              <div class="quests-kpi-item">
+                <span class="quests-kpi-num" id="kpiTotalXpVal">0</span>
+                <span class="quests-kpi-lbl">XP Acumulado</span>
+              </div>
+              <div class="quests-kpi-item">
+                <span class="quests-kpi-num" id="kpiHallOfFameVal">0</span>
+                <span class="quests-kpi-lbl">Conquistas no Hall</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quests Subnavigation Bar -->
+          <div class="quests-subnav">
+            <button class="quests-subnav-btn active" data-subtab="dreams">
+              <span>🌟</span>
+              <span>Sonhos & Bucket List</span>
+            </button>
+            <button class="quests-subnav-btn" data-subtab="sidequests">
+              <span>⚔️</span>
+              <span>Side Quests & Desafios</span>
+            </button>
+            <button class="quests-subnav-btn" data-subtab="hall">
+              <span>🏆</span>
+              <span>Hall da Fama</span>
+            </button>
+          </div>
+
+          <!-- Subtab 1: Sonhos de Vida & Bucket List -->
+          <div id="questsSubViewDreams" class="quests-subview">
+            <div class="section-header">
+              <div>
+                <h3 class="section-title">Minha Bucket List de Grandes Sonhos</h3>
+                <p class="section-subtitle">Grandes aspirações, viagens inesquecíveis, conquistas e marcos de vida</p>
+              </div>
+              <div class="quests-filter-row">
+                <select id="dreamsCategoryFilter" class="clean-select">
+                  <option value="all">Todas as Categorias</option>
+                  <option value="travel">✈️ Viagens & Aventuras</option>
+                  <option value="lifestyle">🏡 Estilo de Vida & Bens</option>
+                  <option value="career">💼 Carreira & Negócios</option>
+                  <option value="finance">💰 Metas Financeiras</option>
+                  <option value="experience">⚡ Experiências Marcantes</option>
+                  <option value="personal">🌿 Desenvolvimento Pessoal</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="dreams-grid" id="dreamsGridContainer">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- Subtab 2: Side Quests & Desafios -->
+          <div id="questsSubViewSideQuests" class="quests-subview hidden">
+            <div class="section-header">
+              <div>
+                <h3 class="section-title">Missões Secundárias & Desafios</h3>
+                <p class="section-subtitle">Desafios de curto e médio prazo que destravam XP, aceleram seus hábitos e quebram a rotina</p>
+              </div>
+              <div class="quests-filter-row">
+                <select id="questsDifficultyFilter" class="clean-select">
+                  <option value="all">Todas as Dificuldades</option>
+                  <option value="easy">🟢 Fácil (+100 XP)</option>
+                  <option value="medium">🟡 Média (+200 XP)</option>
+                  <option value="epic">🟣 Épica (+350 XP)</option>
+                  <option value="legendary">👑 Lendária (+500 XP)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="sidequests-grid" id="sideQuestsGridContainer">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- Subtab 3: Hall da Fama (Conquistas Realizadas) -->
+          <div id="questsSubViewHall" class="quests-subview hidden">
+            <div class="section-header">
+              <div>
+                <h3 class="section-title">Hall da Fama & Vitórias Conquistadas</h3>
+                <p class="section-subtitle">Sua história gravada: sonhos realizados e missões concluídas com honra</p>
+              </div>
+            </div>
+
+            <div class="hall-grid" id="hallOfFameContainer">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
         </section>
 
         <!-- ============================================== -->
@@ -1544,6 +1678,10 @@
         <button class="nav-item area-link mobile-area-choice" data-area="personal" style="padding: 12px;">
           <span class="area-dot dot-personal"></span>
           <span>🌿 Vida Pessoal & Rotina</span>
+        </button>
+        <button class="nav-item mobile-area-choice" data-tab="quests" style="padding: 12px; margin-top: 4px; background: rgba(255, 214, 10, 0.08); border: 1px solid rgba(255, 214, 10, 0.2);">
+          <span style="font-size: 16px;">🌟</span>
+          <span>Sonhos & Side Quests</span>
         </button>
       </div>
     </div>
@@ -2492,6 +2630,123 @@
       </div>
       <div class="modal-footer">
         <button id="saveBankBtn" class="apple-primary-btn full-width">Salvar Instituição</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL 26: NOVO SONHO DE VIDA / BUCKET LIST     -->
+  <!-- ============================================== -->
+  <div id="newDreamModal" class="modal-backdrop">
+    <div class="modal-card spotlight-card">
+      <div class="spotlight-header">
+        <h3 class="modal-title" id="dreamModalTitle">Novo Sonho de Vida</h3>
+        <button class="close-modal-btn" id="closeNewDreamModal">&times;</button>
+      </div>
+      <div class="modal-body-fields">
+        <input type="hidden" id="editDreamId" value="">
+
+        <div class="form-group">
+          <label for="dreamTitleInput">Qual é o seu Grande Sonho / Objetivo?</label>
+          <input type="text" id="dreamTitleInput" class="apple-input" placeholder="Ex: Conhecer o Japão, Comprar meu apartamento, Fazer um salto de paraquedas..." required>
+        </div>
+
+        <div class="modal-options-row" style="padding: 0;">
+          <div class="option-field">
+            <label for="dreamCategorySelect">Categoria</label>
+            <select id="dreamCategorySelect" class="apple-input">
+              <option value="travel">✈️ Viagens & Aventuras</option>
+              <option value="lifestyle">🏡 Estilo de Vida & Bens</option>
+              <option value="career">💼 Carreira & Negócios</option>
+              <option value="finance">💰 Metas Financeiras</option>
+              <option value="experience">⚡ Experiências Marcantes</option>
+              <option value="personal">🌿 Desenvolvimento Pessoal</option>
+            </select>
+          </div>
+          <div class="option-field">
+            <label for="dreamTargetYearInput">Ano ou Prazo Alvo</label>
+            <input type="text" id="dreamTargetYearInput" class="apple-input" placeholder="Ex: 2027 ou Dez/2026">
+          </div>
+        </div>
+
+        <div class="modal-options-row" style="padding: 0;">
+          <div class="option-field">
+            <label for="dreamEstimatedCostInput">Custo Estimado (R$, opcional)</label>
+            <input type="number" id="dreamEstimatedCostInput" class="apple-input" placeholder="Ex: 25000" min="0" step="100">
+          </div>
+          <div class="option-field">
+            <label for="dreamSavedAmountInput">Valor Já Guardado (R$)</label>
+            <input type="number" id="dreamSavedAmountInput" class="apple-input" placeholder="Ex: 8000" min="0" step="100">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="dreamMilestonesInput">Etapas / Marcos para Conquistar (uma por linha)</label>
+          <textarea id="dreamMilestonesInput" class="apple-input" rows="3" placeholder="Ex:&#10;Renovar passaporte&#10;Pesquisar roteiro de 15 dias&#10;Juntar reserva de passagens&#10;Emitir passagens"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="dreamNotesInput">Inspiração & Motivação (Por que isso importa?)</label>
+          <input type="text" id="dreamNotesInput" class="apple-input" placeholder="Ex: Quero viver essa experiência com a família e conhecer uma cultura milenar.">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="saveDreamBtn" class="apple-primary-btn full-width">Salvar Sonho</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL 27: NOVA SIDE QUEST / MISSÃO             -->
+  <!-- ============================================== -->
+  <div id="newSideQuestModal" class="modal-backdrop">
+    <div class="modal-card spotlight-card">
+      <div class="spotlight-header">
+        <h3 class="modal-title" id="sideQuestModalTitle">Nova Side Quest</h3>
+        <button class="close-modal-btn" id="closeNewSideQuestModal">&times;</button>
+      </div>
+      <div class="modal-body-fields">
+        <input type="hidden" id="editSideQuestId" value="">
+
+        <div class="form-group">
+          <label for="sideQuestTitleInput">Título da Missão Secundária</label>
+          <input type="text" id="sideQuestTitleInput" class="apple-input" placeholder="Ex: Desafio 14 Dias Sem Açúcar, 3 Livros Clássicos, Desconexão Digital..." required>
+        </div>
+
+        <div class="form-group">
+          <label for="sideQuestDescInput">Regras & Descrição da Missão</label>
+          <textarea id="sideQuestDescInput" class="apple-input" rows="2" placeholder="Descreva as regras da missão e como ela desafia sua rotina."></textarea>
+        </div>
+
+        <div class="modal-options-row" style="padding: 0;">
+          <div class="option-field">
+            <label for="sideQuestDiffSelect">Dificuldade & Recompensa</label>
+            <select id="sideQuestDiffSelect" class="apple-input">
+              <option value="easy">🟢 Fácil (+100 XP)</option>
+              <option value="medium" selected>🟡 Média (+200 XP)</option>
+              <option value="epic">🟣 Épica (+350 XP)</option>
+              <option value="legendary">👑 Lendária (+500 XP)</option>
+            </select>
+          </div>
+          <div class="option-field">
+            <label for="sideQuestCategorySelect">Área de Impacto</label>
+            <select id="sideQuestCategorySelect" class="apple-input">
+              <option value="health">🏃 Saúde & Corpo</option>
+              <option value="study">🧠 Mente & Leitura</option>
+              <option value="finance">💰 Finanças</option>
+              <option value="personal">🌿 Vida Pessoal</option>
+              <option value="work">💼 Carreira</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="sideQuestTotalDaysInput">Quantidade de Passos / Dias para Concluir</label>
+          <input type="number" id="sideQuestTotalDaysInput" class="apple-input" placeholder="Ex: 14 (dias) ou 3 (livros)" min="1" max="365" value="14" required>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="saveSideQuestBtn" class="apple-primary-btn full-width">Criar Side Quest</button>
       </div>
     </div>
   </div>
