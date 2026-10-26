@@ -1472,6 +1472,12 @@
           </svg>
           <span>Hábitos</span>
         </button>
+        <button class="mobile-tab-btn" data-tab="quests">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          </svg>
+          <span>Sonhos</span>
+        </button>
         <button class="mobile-tab-btn" id="mobileAreasDrawerBtn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <rect x="3" y="3" width="7" height="7"></rect>
@@ -2266,8 +2272,22 @@
           <span>Continuar com o Google</span>
         </button>
 
+        <!-- Quick 1-Tap Access Profiles -->
+        <div class="auth-quick-access">
+          <span class="auth-quick-title">Ou escolha um acesso rápido com 1 toque:</span>
+          <div class="auth-quick-pills">
+            <button type="button" class="quick-user-pill" data-email="moreirabmm@gmail.com" data-name="Pedro Moreira">
+              <span class="pill-google-badge">G</span>
+              <span>Pedro Moreira (moreirabmm@gmail.com)</span>
+            </button>
+            <button type="button" class="quick-user-pill" data-email="visitante@aura.app" data-name="Visitante">
+              <span>👤 Entrar como Visitante</span>
+            </button>
+          </div>
+        </div>
+
         <div class="auth-divider">
-          <span>ou acesse diretamente pelo e-mail</span>
+          <span>ou digite seu e-mail do Google</span>
         </div>
 
         <form id="directLoginForm" class="auth-form">

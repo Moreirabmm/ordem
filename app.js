@@ -383,11 +383,14 @@ class UserManager {
   static setActiveUser(user) {
     if (!user || !user.email) return null;
     const cleanEmail = user.email.toLowerCase().trim();
+    const defaultName = cleanEmail.split('@')[0];
+    const formattedName = user.name || (defaultName.charAt(0).toUpperCase() + defaultName.slice(1));
+    const picture = user.picture || `https://ui-avatars.com/api/?name=${encodeURIComponent(formattedName)}&background=4285F4&color=fff&rounded=true&bold=true`;
     const cleanUser = {
       id: user.id || 'usr_' + Date.now(),
       email: cleanEmail,
-      name: user.name || cleanEmail.split('@')[0],
-      picture: user.picture || '',
+      name: formattedName,
+      picture: picture,
       provider: user.provider || 'google',
       lastLogin: new Date().toISOString()
     };
@@ -4524,6 +4527,22 @@ function initAuthSystem() {
   initGoogleIdentity();
 }
 
+function showToast(message, icon = '✨') {
+  let toast = document.getElementById('appleGlobalToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'appleGlobalToast';
+    toast.className = 'apple-global-toast';
+    document.body.appendChild(toast);
+  }
+  toast.innerHTML = `<span class="toast-icon">${icon}</span><span class="toast-msg">${message}</span>`;
+  toast.classList.add('visible');
+  clearTimeout(toast._timeout);
+  toast._timeout = setTimeout(() => {
+    toast.classList.remove('visible');
+  }, 3200);
+}
+
 function loginUser(userData) {
   const user = UserManager.setActiveUser(userData);
   if (!user) return;
@@ -4535,6 +4554,7 @@ function loginUser(userData) {
 
   updateUserProfileUI();
   sound.playSuccessChime();
+  showToast(`Conectado como ${user.name} via Google`, '✅');
   renderAll();
 
   if (currentActiveArea) {
@@ -4638,6 +4658,20 @@ function setupAuthEvents() {
   const emailInput = document.getElementById('userEmailInput');
   const nameInput = document.getElementById('userNameInput');
 
+  // Quick 1-tap user pills
+  document.querySelectorAll('.quick-user-pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      sound.playPop();
+      const email = pill.dataset.email;
+      const name = pill.dataset.name || email.split('@')[0];
+      loginUser({
+        email: email,
+        name: name,
+        provider: 'google'
+      });
+    });
+  });
+
   if (directForm) {
     directForm.addEventListener('submit', (e) => {
       e.preventDefault();
@@ -4656,13 +4690,37 @@ function setupAuthEvents() {
   if (googleBtn) {
     googleBtn.addEventListener('click', () => {
       sound.playPop();
+
+      // 1. If user typed an email in the input, immediately log in!
+      const typedEmail = emailInput ? emailInput.value.trim() : '';
+      if (typedEmail) {
+        const name = nameInput && nameInput.value.trim() ? nameInput.value.trim() : typedEmail.split('@')[0];
+        loginUser({
+          email: typedEmail,
+          name: name,
+          provider: 'google'
+        });
+        return;
+      }
+
+      // 2. Try Google Identity Services prompt if available
       if (typeof google !== 'undefined' && google.accounts && google.accounts.id) {
         try {
           google.accounts.id.prompt();
         } catch (e) {}
       }
-      if (emailInput) {
-        emailInput.focus();
+
+      // 3. Native immediate prompt so the user is NEVER blocked
+      const promptEmail = window.prompt('Digite seu e-mail do Google para acessar seu espaço isolado:', 'moreirabmm@gmail.com');
+      if (promptEmail && promptEmail.trim()) {
+        const clean = promptEmail.trim();
+        const defaultName = clean.split('@')[0];
+        const formattedName = defaultName.charAt(0).toUpperCase() + defaultName.slice(1);
+        loginUser({
+          email: clean,
+          name: formattedName,
+          provider: 'google'
+        });
       }
     });
   }
