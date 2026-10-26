@@ -6338,14 +6338,39 @@ function renderFocusTasks() {
       </div>
     `;
 
-    // Checkbox toggle
-    card.querySelector('.task-check-circle').onclick = (e) => {
-      e.stopPropagation();
-      sound.playPop();
+    // Checkbox toggle (clicking circle or text)
+    const toggleFocusTask = () => {
       task.completed = !task.completed;
+      if (task.completed) {
+        sound.playSuccessChime();
+        if (store.state.focus.activeTaskId === task.id) {
+          const nextActive = store.state.focus.tasks.find(t => !t.completed && t.id !== task.id);
+          store.state.focus.activeTaskId = nextActive ? nextActive.id : null;
+        }
+      } else {
+        sound.playPop();
+      }
       store.save();
-      renderFocusTasks();
+      renderFocusSection();
     };
+
+    const checkBtn = card.querySelector('.task-check-circle');
+    if (checkBtn) {
+      checkBtn.onclick = (e) => {
+        e.stopPropagation();
+        toggleFocusTask();
+      };
+    }
+
+    const taskText = card.querySelector('.focus-task-text');
+    if (taskText) {
+      taskText.style.cursor = 'pointer';
+      taskText.title = task.completed ? 'Clique para reabrir tarefa' : 'Clique para concluir tarefa';
+      taskText.onclick = (e) => {
+        e.stopPropagation();
+        toggleFocusTask();
+      };
+    }
 
     // Target select
     card.querySelector('.focus-target-select-btn').onclick = (e) => {

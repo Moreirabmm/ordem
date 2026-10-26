@@ -1020,14 +1020,18 @@ button, a, input, select, .habit-quick-card, .task-item, .day-dot, .nav-item, .m
   transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
-.task-item.completed .task-check-circle {
-  background: var(--accent-blue);
-  border-color: var(--accent-blue);
+.task-item.completed .task-check-circle,
+.focus-task-card.completed .task-check-circle,
+.meal-item.completed .task-check-circle {
+  background: var(--accent-blue) !important;
+  border-color: var(--accent-blue) !important;
 }
 
-.task-item.completed .task-check-circle svg {
-  opacity: 1;
-  transform: scale(1);
+.task-item.completed .task-check-circle svg,
+.focus-task-card.completed .task-check-circle svg,
+.meal-item.completed .task-check-circle svg {
+  opacity: 1 !important;
+  transform: scale(1) !important;
 }
 
 .task-content {
@@ -1436,11 +1440,22 @@ button, a, input, select, .habit-quick-card, .task-item, .day-dot, .nav-item, .m
 
 .focus-task-card.completed {
   opacity: 0.65;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.focus-task-card.completed.active-target {
+  border-color: var(--border-subtle);
+  background: rgba(255, 255, 255, 0.02);
+  box-shadow: none;
 }
 
 .focus-task-card.completed .focus-task-text {
   text-decoration: line-through;
   color: var(--text-tertiary);
+}
+
+.focus-task-card.completed .focus-target-select-btn {
+  opacity: 0.5;
 }
 
 .focus-task-left {
