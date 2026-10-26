@@ -4257,3 +4257,302 @@ button, a, input, select, .habit-quick-card, .task-item, .day-dot, .nav-item, .m
   padding: 10px;
 }
 
+/* =============================================================================
+   FINANCE SUBNAV & INVESTMENTS STYLING (APPLE DESIGN)
+   ============================================================================= */
+
+.finance-subnav {
+  display: flex;
+  background: var(--bg-pill);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  gap: 4px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+}
+
+.finance-subnav-btn {
+  background: transparent;
+  border: none;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background var(--trans-fast), color var(--trans-fast);
+}
+
+.finance-subnav-btn:hover {
+  color: var(--text-primary);
+  background: var(--bg-pill-hover);
+}
+
+.finance-subnav-btn.active {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Asset Allocation Multi-Segment Bar */
+.invest-allocation-card {
+  margin-bottom: 20px;
+}
+
+.allocation-multi-bar {
+  display: flex;
+  height: 14px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-pill);
+  overflow: hidden;
+  margin: 18px 0 16px 0;
+  border: 1px solid var(--border-subtle);
+}
+
+.allocation-segment {
+  height: 100%;
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+}
+
+.allocation-legend-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.allocation-legend-item {
+  background: var(--bg-pill);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: background var(--trans-fast);
+}
+
+.allocation-legend-item:hover {
+  background: var(--bg-pill-hover);
+}
+
+.allocation-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.allocation-legend-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.allocation-legend-name {
+  font-size: 11px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.allocation-legend-val {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* Category Badges */
+.badge-stocks {
+  background: rgba(255, 159, 10, 0.12);
+  color: var(--accent-orange);
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.badge-fiis {
+  background: rgba(48, 209, 88, 0.12);
+  color: var(--accent-green);
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.badge-fixed {
+  background: rgba(10, 132, 255, 0.12);
+  color: var(--accent-blue);
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.badge-crypto {
+  background: rgba(191, 90, 242, 0.12);
+  color: var(--accent-purple);
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.badge-emergency {
+  background: rgba(100, 210, 255, 0.12);
+  color: #64D2FF;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.badge-global {
+  background: rgba(255, 55, 95, 0.12);
+  color: #FF375F;
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Return (Profit / Loss) Badges */
+.invest-profit {
+  color: var(--accent-green);
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.invest-loss {
+  color: var(--accent-red);
+  font-weight: 600;
+  font-size: 12px;
+}
+
+/* Connected Banks Grid */
+.banks-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+}
+
+.bank-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: var(--glass-shadow);
+  transition: transform var(--trans-fast), box-shadow var(--trans-fast), border-color var(--trans-fast);
+}
+
+.bank-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+}
+
+.bank-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.bank-card-icon {
+  font-size: 24px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--bg-pill);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-subtle);
+}
+
+.bank-card-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 2px;
+}
+
+.bank-card-type {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.bank-card-balance {
+  margin: 14px 0 10px 0;
+}
+
+.bank-balance-num {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: block;
+}
+
+.bank-balance-lbl {
+  font-size: 11px;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.bank-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+/* OFX & CSV Dropzone */
+.ofx-dropzone {
+  border: 2px dashed var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 32px 20px;
+  text-align: center;
+  background: var(--bg-pill);
+  cursor: pointer;
+  transition: all var(--trans-fast);
+}
+
+.ofx-dropzone:hover,
+.ofx-dropzone.drag-over {
+  border-color: var(--accent-blue);
+  background: rgba(10, 132, 255, 0.06);
+}
+
+.dropzone-icon {
+  color: var(--accent-blue);
+  margin-bottom: 12px;
+  display: inline-flex;
+}
+
+.statement-feedback {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  background: rgba(48, 209, 88, 0.12);
+  border: 1px solid rgba(48, 209, 88, 0.25);
+  color: var(--accent-green);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+

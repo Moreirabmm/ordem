@@ -100,6 +100,7 @@ const INITIAL_DATA = {
   finance: {
     monthlyBudget: 5000,
     savingsGoal: 1500,
+    portfolioGoal: 100000.00,
     transactions: [
       { id: 'f1', description: 'Salário / Pró-labore', type: 'income', amount: 7500.00, category: 'Trabalho', date: '2026-10-05' },
       { id: 'f2', description: 'Consultoria Estratégica', type: 'income', amount: 1800.00, category: 'Trabalho', date: '2026-10-18' },
@@ -109,6 +110,21 @@ const INITIAL_DATA = {
       { id: 'f6', description: 'Combustível / Transporte', type: 'expense', amount: 320.00, category: 'Transporte', date: '2026-10-19' },
       { id: 'f7', description: 'Aporte Tesouro Direto & FIIs', type: 'expense', amount: 1500.00, category: 'Investimentos', date: '2026-10-20' },
       { id: 'f8', description: 'Jantar Restaurante', type: 'expense', amount: 180.00, category: 'Lazer', date: '2026-10-22' }
+    ],
+    investments: [
+      { id: 'inv1', ticker: 'Tesouro Selic 2029', name: 'Tesouro Direto Pós-Fixado', category: 'fixed_income', institution: 'XP Investimentos', quantity: 2.5, avgPrice: 14200.00, currentPrice: 14850.00 },
+      { id: 'inv2', ticker: 'HGLG11', name: 'CSHG Logística FII', category: 'fiis', institution: 'Nubank', quantity: 60, avgPrice: 157.50, currentPrice: 164.80 },
+      { id: 'inv3', ticker: 'PETR4', name: 'Petrobras PN', category: 'stocks', institution: 'BTG Pactual', quantity: 150, avgPrice: 33.40, currentPrice: 38.60 },
+      { id: 'inv4', ticker: 'IVVB11', name: 'iShares S&P 500 Fundo de Índice', category: 'global', institution: 'XP Investimentos', quantity: 40, avgPrice: 285.00, currentPrice: 312.40 },
+      { id: 'inv5', ticker: 'BTC', name: 'Bitcoin Spot', category: 'crypto', institution: 'Binance', quantity: 0.035, avgPrice: 320000.00, currentPrice: 395000.00 },
+      { id: 'inv6', ticker: 'CDB 105% CDI', name: 'Reserva de Emergência Diária', category: 'emergency', institution: 'Nubank', quantity: 1, avgPrice: 12500.00, currentPrice: 13120.00 }
+    ],
+    connectedBanks: [
+      { id: 'b_nu', name: 'Nubank', type: 'Conta Corrente & Ultravioleta', icon: '🟣', status: 'Ativo', lastSync: 'Hoje, 14:30' },
+      { id: 'b_xp', name: 'XP Investimentos', type: 'Corretora de Valores', icon: '🟡', status: 'Ativo', lastSync: 'Hoje, 11:15' },
+      { id: 'b_btg', name: 'BTG Pactual', type: 'Banco & Investimentos', icon: '🔵', status: 'Ativo', lastSync: 'Ontem' },
+      { id: 'b_inter', name: 'Banco Inter', type: 'Conta Global & Corretora', icon: '🟠', status: 'Ativo', lastSync: 'Hoje, 09:00' },
+      { id: 'b_bin', name: 'Binance', type: 'Exchange Cripto', icon: '🪙', status: 'Ativo', lastSync: 'Hoje, 16:00' }
     ]
   },
   knowledge: {
@@ -210,7 +226,15 @@ function getEmptyUserData() {
     finance: {
       monthlyBudget: 5000,
       savingsGoal: 1500,
-      transactions: []
+      portfolioGoal: 100000,
+      transactions: [],
+      investments: [],
+      connectedBanks: [
+        { id: 'b_nu', name: 'Nubank', type: 'Conta Corrente & Investimentos', icon: '🟣', status: 'Ativo', lastSync: 'Configurado' },
+        { id: 'b_xp', name: 'XP Investimentos', type: 'Corretora de Valores', icon: '🟡', status: 'Ativo', lastSync: 'Configurado' },
+        { id: 'b_btg', name: 'BTG Pactual', type: 'Banco & Investimentos', icon: '🔵', status: 'Ativo', lastSync: 'Configurado' },
+        { id: 'b_itau', name: 'Itaú / Íon', type: 'Banco & Corretora', icon: '🔷', status: 'Ativo', lastSync: 'Configurado' }
+      ]
     },
     knowledge: {
       booksGoalYear: 12,
@@ -334,10 +358,19 @@ class Store {
         if (!parsed.health.running.weeklyGoalKm) parsed.health.running.weeklyGoalKm = 20;
         if (!Array.isArray(parsed.health.running.sessions)) parsed.health.running.sessions = [];
         if (!Array.isArray(parsed.workKanban)) parsed.workKanban = [];
-        if (!parsed.finance) parsed.finance = { monthlyBudget: 5000, savingsGoal: 1500, transactions: [] };
+        if (!parsed.finance) parsed.finance = { monthlyBudget: 5000, savingsGoal: 1500, portfolioGoal: 100000, transactions: [], investments: [], connectedBanks: [] };
         if (!parsed.finance.monthlyBudget) parsed.finance.monthlyBudget = 5000;
         if (!parsed.finance.savingsGoal) parsed.finance.savingsGoal = 1500;
+        if (!parsed.finance.portfolioGoal) parsed.finance.portfolioGoal = 100000;
         if (!Array.isArray(parsed.finance.transactions)) parsed.finance.transactions = [];
+        if (!Array.isArray(parsed.finance.investments)) parsed.finance.investments = [];
+        if (!Array.isArray(parsed.finance.connectedBanks)) {
+          parsed.finance.connectedBanks = [
+            { id: 'b_nu', name: 'Nubank', type: 'Conta Corrente & Investimentos', icon: '🟣', status: 'Ativo', lastSync: 'Configurado' },
+            { id: 'b_xp', name: 'XP Investimentos', type: 'Corretora de Valores', icon: '🟡', status: 'Ativo', lastSync: 'Configurado' },
+            { id: 'b_btg', name: 'BTG Pactual', type: 'Banco & Investimentos', icon: '🔵', status: 'Ativo', lastSync: 'Configurado' }
+          ];
+        }
         if (!parsed.knowledge) parsed.knowledge = { booksGoalYear: 12, dailyPagesGoal: 20, books: [], courses: [] };
         if (!parsed.knowledge.booksGoalYear) parsed.knowledge.booksGoalYear = 12;
         if (!parsed.knowledge.dailyPagesGoal) parsed.knowledge.dailyPagesGoal = 20;
@@ -697,6 +730,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Event Listeners: Personal Finance Spreadsheet Modals
   setupFinanceModals();
+  setupInvestmentModals();
 
   // Event Listeners: Knowledge & Reading Tracker Modals
   setupKnowledgeModals();
@@ -2476,17 +2510,59 @@ function setupKanbanModals() {
 }
 
 // =============================================================================
-// PERSONAL FINANCE HUB (Spreadsheet & Ledger Apple Style)
+// PERSONAL FINANCE HUB (Spreadsheet, Investments & Open Banking)
 // =============================================================================
 
+let activeFinanceSubtab = 'ledger';
 let financeCurrentTypeFilter = 'all';
 let financeCurrentCategoryFilter = 'all';
+let investCurrentCategoryFilter = 'all';
+let investCurrentBankFilter = 'all';
+
+const ASSET_CLASSES = {
+  fixed_income: { label: 'Renda Fixa / Tesouro', color: '#0A84FF', badgeClass: 'badge-fixed' },
+  fiis: { label: 'Fundos Imobiliários (FIIs)', color: '#30D158', badgeClass: 'badge-fiis' },
+  stocks: { label: 'Ações Nacionais (B3)', color: '#FF9F0A', badgeClass: 'badge-stocks' },
+  global: { label: 'Internacional / BDRs', color: '#FF375F', badgeClass: 'badge-global' },
+  crypto: { label: 'Criptoativos', color: '#BF5AF2', badgeClass: 'badge-crypto' },
+  emergency: { label: 'Reserva de Emergência', color: '#64D2FF', badgeClass: 'badge-emergency' }
+};
 
 function formatBRL(amount) {
   return amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 }
 
 function renderFinanceHub() {
+  setupFinanceSubnav();
+  renderFinanceLedger();
+  renderInvestmentsHub();
+  renderBanksHub();
+}
+
+function setupFinanceSubnav() {
+  document.querySelectorAll('.finance-subnav-btn').forEach(btn => {
+    btn.onclick = () => {
+      sound.playPop();
+      document.querySelectorAll('.finance-subnav-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      activeFinanceSubtab = btn.dataset.subtab;
+
+      const vLedger = document.getElementById('financeSubViewLedger');
+      const vInvest = document.getElementById('financeSubViewInvestments');
+      const vBanks = document.getElementById('financeSubViewBanks');
+
+      if (vLedger) vLedger.classList.toggle('hidden', activeFinanceSubtab !== 'ledger');
+      if (vInvest) vInvest.classList.toggle('hidden', activeFinanceSubtab !== 'investments');
+      if (vBanks) vBanks.classList.toggle('hidden', activeFinanceSubtab !== 'banks');
+
+      if (activeFinanceSubtab === 'investments') renderInvestmentsHub();
+      if (activeFinanceSubtab === 'banks') renderBanksHub();
+      if (activeFinanceSubtab === 'ledger') renderFinanceLedger();
+    };
+  });
+}
+
+function renderFinanceLedger() {
   const transactions = (store.state.finance && store.state.finance.transactions) ? store.state.finance.transactions : [];
 
   const totalIncome = transactions
@@ -2610,6 +2686,679 @@ function renderFinanceTable() {
 
     tbody.appendChild(tr);
   });
+}
+
+// =============================================================================
+// INVESTMENTS PORTFOLIO (APPLE HUMAN INTERFACE ASSET ALLOCATION)
+// =============================================================================
+
+function renderInvestmentsHub() {
+  const investments = (store.state.finance && store.state.finance.investments) ? store.state.finance.investments : [];
+  const portfolioGoal = (store.state.finance && store.state.finance.portfolioGoal) ? store.state.finance.portfolioGoal : 100000;
+
+  let totalEquity = 0;
+  let totalCost = 0;
+  const classBreakdown = {
+    fixed_income: 0,
+    fiis: 0,
+    stocks: 0,
+    global: 0,
+    crypto: 0,
+    emergency: 0
+  };
+
+  investments.forEach(inv => {
+    const qty = parseFloat(inv.quantity) || 0;
+    const avg = parseFloat(inv.avgPrice) || 0;
+    const cur = parseFloat(inv.currentPrice) || avg;
+    const positionEquity = qty * cur;
+    const positionCost = qty * avg;
+
+    totalEquity += positionEquity;
+    totalCost += positionCost;
+
+    const cat = inv.category && classBreakdown[inv.category] !== undefined ? inv.category : 'stocks';
+    classBreakdown[cat] += positionEquity;
+  });
+
+  const totalProfit = totalEquity - totalCost;
+  const profitPct = totalCost > 0 ? ((totalEquity / totalCost) - 1) * 100 : 0;
+
+  // Update KPIs
+  const elEquity = document.getElementById('investTotalEquityVal');
+  const elCost = document.getElementById('investTotalCostVal');
+  const elProfit = document.getElementById('investTotalProfitVal');
+  const elProfitPct = document.getElementById('investTotalProfitPct');
+  const elGoalVal = document.getElementById('investPortfolioGoalVal');
+  const elGoalBar = document.getElementById('investPortfolioGoalBar');
+  const elGoalSub = document.getElementById('investPortfolioGoalSub');
+
+  if (elEquity) elEquity.textContent = formatBRL(totalEquity);
+  if (elCost) elCost.textContent = formatBRL(totalCost);
+  if (elProfit) {
+    elProfit.textContent = (totalProfit >= 0 ? '+' : '') + formatBRL(totalProfit);
+    elProfit.style.color = totalProfit >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+  }
+  if (elProfitPct) {
+    elProfitPct.textContent = `${profitPct >= 0 ? '+' : ''}${profitPct.toFixed(1)}% de rentabilidade global`;
+    elProfitPct.style.color = profitPct >= 0 ? 'var(--accent-green)' : 'var(--accent-red)';
+  }
+  if (elGoalVal) elGoalVal.textContent = formatBRL(portfolioGoal);
+  if (elGoalBar) {
+    const goalPct = portfolioGoal > 0 ? Math.min(100, Math.round((totalEquity / portfolioGoal) * 100)) : 0;
+    elGoalBar.style.width = `${goalPct}%`;
+  }
+  if (elGoalSub) {
+    const goalPct = portfolioGoal > 0 ? Math.round((totalEquity / portfolioGoal) * 100) : 0;
+    elGoalSub.textContent = `${goalPct}% da meta de ${formatBRL(portfolioGoal)} atingida`;
+  }
+
+  // Render Multi-segment Allocation Bar
+  const barContainer = document.getElementById('allocationMultiBar');
+  const legendContainer = document.getElementById('allocationLegendGrid');
+
+  if (barContainer) {
+    barContainer.innerHTML = '';
+    if (totalEquity === 0) {
+      barContainer.innerHTML = `<div style="width: 100%; height: 100%; background: var(--bg-pill-hover); border-radius: var(--radius-pill);"></div>`;
+    } else {
+      Object.keys(classBreakdown).forEach(key => {
+        const amount = classBreakdown[key];
+        if (amount > 0) {
+          const pct = (amount / totalEquity) * 100;
+          const meta = ASSET_CLASSES[key] || { label: key, color: '#0A84FF' };
+          const seg = document.createElement('div');
+          seg.className = 'allocation-segment';
+          seg.style.width = `${pct}%`;
+          seg.style.background = meta.color;
+          seg.title = `${meta.label}: ${pct.toFixed(1)}% (${formatBRL(amount)})`;
+          barContainer.appendChild(seg);
+        }
+      });
+    }
+  }
+
+  // Render Legend
+  if (legendContainer) {
+    legendContainer.innerHTML = '';
+    Object.keys(classBreakdown).forEach(key => {
+      const amount = classBreakdown[key];
+      const pct = totalEquity > 0 ? ((amount / totalEquity) * 100) : 0;
+      const meta = ASSET_CLASSES[key] || { label: key, color: '#0A84FF' };
+
+      const item = document.createElement('div');
+      item.className = 'allocation-legend-item';
+      item.innerHTML = `
+        <span class="allocation-legend-dot" style="background: ${meta.color};"></span>
+        <div class="allocation-legend-info">
+          <span class="allocation-legend-name">${meta.label}</span>
+          <span class="allocation-legend-val">${pct.toFixed(1)}% &bull; ${formatBRL(amount)}</span>
+        </div>
+      `;
+      legendContainer.appendChild(item);
+    });
+  }
+
+  // Populate Bank Filter dropdown
+  const bankFilter = document.getElementById('investBankFilter');
+  if (bankFilter) {
+    const currentVal = bankFilter.value;
+    const institutions = Array.from(new Set(investments.map(i => i.institution).filter(Boolean)));
+    bankFilter.innerHTML = '<option value="all">Todas as Instituições</option>';
+    institutions.forEach(inst => {
+      const opt = document.createElement('option');
+      opt.value = inst;
+      opt.textContent = inst;
+      if (inst === currentVal) opt.selected = true;
+      bankFilter.appendChild(opt);
+    });
+  }
+
+  // Render Table
+  renderInvestmentsTable();
+}
+
+function renderInvestmentsTable() {
+  const tbody = document.getElementById('investmentsTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  let list = (store.state.finance && store.state.finance.investments) ? [...store.state.finance.investments] : [];
+
+  if (investCurrentCategoryFilter !== 'all') {
+    list = list.filter(i => i.category === investCurrentCategoryFilter);
+  }
+  if (investCurrentBankFilter !== 'all') {
+    list = list.filter(i => i.institution === investCurrentBankFilter);
+  }
+
+  if (list.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="9" class="empty-state" style="text-align: center; padding: 36px;">Nenhum ativo de investimento cadastrado. Clique em "+ Novo Ativo / Aporte" para começar.</td></tr>`;
+    return;
+  }
+
+  list.forEach(inv => {
+    const tr = document.createElement('tr');
+    const qty = parseFloat(inv.quantity) || 0;
+    const avg = parseFloat(inv.avgPrice) || 0;
+    const cur = parseFloat(inv.currentPrice) || avg;
+    const totalPos = qty * cur;
+    const totalCost = qty * avg;
+    const profit = totalPos - totalCost;
+    const returnPct = totalCost > 0 ? ((totalPos / totalCost) - 1) * 100 : 0;
+
+    const meta = ASSET_CLASSES[inv.category] || { label: 'Ações', badgeClass: 'badge-stocks' };
+
+    tr.innerHTML = `
+      <td>
+        <strong style="color: var(--text-primary); font-size: 13px;">${escapeHtml(inv.ticker)}</strong>
+        <div style="font-size: 11px; color: var(--text-secondary);">${escapeHtml(inv.name || '')}</div>
+      </td>
+      <td>
+        <span class="${meta.badgeClass}">${meta.label}</span>
+      </td>
+      <td>
+        <span style="font-size: 12px; color: var(--text-secondary); font-weight: 500;">${escapeHtml(inv.institution || 'Geral')}</span>
+      </td>
+      <td>${qty.toLocaleString('pt-BR', { maximumFractionDigits: 6 })}</td>
+      <td>${formatBRL(avg)}</td>
+      <td>${formatBRL(cur)}</td>
+      <td><strong>${formatBRL(totalPos)}</strong></td>
+      <td>
+        <span class="${profit >= 0 ? 'invest-profit' : 'invest-loss'}">
+          ${profit >= 0 ? '+' : ''}${formatBRL(profit)} (${returnPct >= 0 ? '+' : ''}${returnPct.toFixed(1)}%)
+        </span>
+      </td>
+      <td style="text-align: right; white-space: nowrap;">
+        <button class="icon-btn edit-invest-btn" title="Editar Ativo" style="background: none; border: none; cursor: pointer; color: var(--text-secondary); padding: 4px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+            <path d="M12 20h9"></path>
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+          </svg>
+        </button>
+        <button class="task-delete-btn delete-invest-btn" title="Excluir" style="margin-left: 6px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+        </button>
+      </td>
+    `;
+
+    // Edit button
+    tr.querySelector('.edit-invest-btn').onclick = () => {
+      sound.playPop();
+      openEditInvestmentModal(inv);
+    };
+
+    // Delete button
+    tr.querySelector('.delete-invest-btn').onclick = () => {
+      if (confirm(`Remover ativo ${inv.ticker} da sua carteira?`)) {
+        sound.playPop();
+        store.state.finance.investments = store.state.finance.investments.filter(i => i.id !== inv.id);
+        store.save();
+        renderInvestmentsHub();
+        renderBanksHub();
+      }
+    };
+
+    tbody.appendChild(tr);
+  });
+}
+
+// =============================================================================
+// CONNECTED BANKS & OPEN BANKING STATEMENTS (OFX / CSV)
+// =============================================================================
+
+function renderBanksHub() {
+  const container = document.getElementById('connectedBanksGrid');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const banks = (store.state.finance && store.state.finance.connectedBanks) ? store.state.finance.connectedBanks : [];
+  const investments = (store.state.finance && store.state.finance.investments) ? store.state.finance.investments : [];
+
+  banks.forEach(bank => {
+    // Calculate total balance allocated to this bank
+    const bankInvestments = investments.filter(i => (i.institution || '').toLowerCase().trim() === bank.name.toLowerCase().trim());
+    const bankBalance = bankInvestments.reduce((acc, i) => acc + ((parseFloat(i.quantity) || 0) * (parseFloat(i.currentPrice) || parseFloat(i.avgPrice) || 0)), 0);
+
+    const card = document.createElement('div');
+    card.className = 'bank-card';
+    card.innerHTML = `
+      <div>
+        <div class="bank-card-header">
+          <div class="bank-card-icon">${bank.icon || '🏦'}</div>
+          <span class="badge-income" style="font-size: 10px;">🟢 ${escapeHtml(bank.status || 'Ativo')}</span>
+        </div>
+        <div class="bank-card-title">${escapeHtml(bank.name)}</div>
+        <div class="bank-card-type">${escapeHtml(bank.type || 'Conta & Investimentos')}</div>
+      </div>
+      <div class="bank-card-balance">
+        <span class="bank-balance-lbl">Patrimônio Alocado</span>
+        <span class="bank-balance-num">${formatBRL(bankBalance)}</span>
+        <span style="font-size: 11px; color: var(--text-tertiary);">${bankInvestments.length} ativo(s) vinculado(s)</span>
+      </div>
+      <div class="bank-card-footer">
+        <span style="font-size: 11px; color: var(--text-tertiary);">${escapeHtml(bank.lastSync || 'Sincronizado')}</span>
+        <button class="pill-btn add-invest-to-bank-btn" data-bank="${escapeHtml(bank.name)}" style="font-size: 11px; padding: 4px 10px;">+ Aporte</button>
+      </div>
+    `;
+
+    card.querySelector('.add-invest-to-bank-btn').onclick = (e) => {
+      e.stopPropagation();
+      sound.playPop();
+      const bName = e.currentTarget.dataset.bank;
+      openCreateInvestmentForBank(bName);
+    };
+
+    container.appendChild(card);
+  });
+
+  setupStatementDropzone();
+}
+
+function parseBankStatement(text, filename = '') {
+  const transactions = [];
+  const lower = filename.toLowerCase();
+
+  // 1. Check if OFX file
+  if (text.includes('<OFX>') || text.includes('<STMTTRN>') || lower.endsWith('.ofx')) {
+    const trnRegex = /<STMTTRN>([\s\S]*?)<\/STMTTRN>/gi;
+    let match;
+    while ((match = trnRegex.exec(text)) !== null) {
+      const block = match[1];
+      const dateMatch = block.match(/<DTPOSTED>([0-9]{8})/i);
+      const amtMatch = block.match(/<TRNAMT>([^\r\n<]+)/i);
+      const memoMatch = block.match(/<(?:MEMO|NAME)>([^\r\n<]+)/i);
+
+      if (amtMatch) {
+        const rawAmt = parseFloat(amtMatch[1].trim().replace(',', '.'));
+        const isExpense = rawAmt < 0;
+        const absAmt = Math.abs(rawAmt);
+
+        let dateStr = getTodayString();
+        if (dateMatch && dateMatch[1].length === 8) {
+          const y = dateMatch[1].substring(0, 4);
+          const m = dateMatch[1].substring(4, 6);
+          const d = dateMatch[1].substring(6, 8);
+          dateStr = `${y}-${m}-${d}`;
+        }
+
+        const desc = memoMatch ? memoMatch[1].trim() : (isExpense ? 'Despesa Bancária' : 'Receita Bancária');
+
+        let category = 'Outros';
+        const dLower = desc.toLowerCase();
+        if (dLower.includes('mercado') || dLower.includes('supermercado') || dLower.includes('ifood') || dLower.includes('restaurante') || dLower.includes('padaria') || dLower.includes('cafe')) {
+          category = 'Alimentação';
+        } else if (dLower.includes('uber') || dLower.includes('99') || dLower.includes('combustivel') || dLower.includes('posto') || dLower.includes('gasolina')) {
+          category = 'Transporte';
+        } else if (dLower.includes('aluguel') || dLower.includes('condominio') || dLower.includes('luz') || dLower.includes('energia') || dLower.includes('internet') || dLower.includes('claro') || dLower.includes('vivo')) {
+          category = 'Moradia';
+        } else if (dLower.includes('salario') || dLower.includes('ted recebida') || dLower.includes('pix recebido') || dLower.includes('remunera')) {
+          category = 'Trabalho';
+        } else if (dLower.includes('tesouro') || dLower.includes('fii') || dLower.includes('invest') || dLower.includes('aporte') || dLower.includes('cdb') || dLower.includes('xp') || dLower.includes('btg')) {
+          category = 'Investimentos';
+        } else if (dLower.includes('netflix') || dLower.includes('spotify') || dLower.includes('cinema') || dLower.includes('ingresso') || dLower.includes('steam')) {
+          category = 'Lazer';
+        }
+
+        transactions.push({
+          id: 'f_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+          description: desc,
+          type: isExpense ? 'expense' : 'income',
+          amount: absAmt,
+          category: category,
+          date: dateStr
+        });
+      }
+    }
+  } else {
+    // 2. CSV Parser
+    const lines = text.split(/\r?\n/).filter(l => l.trim().length > 0);
+    const firstLine = lines[0] || '';
+    const delimiter = (firstLine.split(';').length > firstLine.split(',').length) ? ';' : ',';
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+      const cols = line.split(delimiter).map(c => c.trim().replace(/^["']|["']$/g, ''));
+      if (cols.length < 2) continue;
+
+      // Skip header lines
+      if (cols.some(c => /data|date|descri|valor|amount/i.test(c))) continue;
+
+      let foundDate = null;
+      let foundAmt = null;
+      let foundDesc = '';
+
+      for (let j = 0; j < cols.length; j++) {
+        const val = cols[j];
+        if (!foundDate && /^\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}$/.test(val)) {
+          const parts = val.split(/[\/\-\.]/);
+          if (parts[0].length === 4) {
+            foundDate = `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+          } else {
+            const yr = parts[2].length === 2 ? '20' + parts[2] : parts[2];
+            foundDate = `${yr}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+          }
+        } else if (!foundDate && /^\d{4}[\/\-\.]\d{1,2}[\/\-\.]\d{1,2}$/.test(val)) {
+          const parts = val.split(/[\/\-\.]/);
+          foundDate = `${parts[0]}-${parts[1].padStart(2, '0')}-${parts[2].padStart(2, '0')}`;
+        } else {
+          const cleanNum = val.replace('R$', '').replace(/\s/g, '').replace(/\./g, '').replace(',', '.');
+          const num = parseFloat(cleanNum);
+          if (!isNaN(num) && Math.abs(num) > 0.001 && foundAmt === null) {
+            foundAmt = num;
+          } else if (val.length > 2 && !foundDesc) {
+            foundDesc = val;
+          }
+        }
+      }
+
+      if (foundAmt !== null) {
+        const isExpense = foundAmt < 0;
+        const absAmt = Math.abs(foundAmt);
+        transactions.push({
+          id: 'f_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+          description: foundDesc || (isExpense ? 'Despesa Importada' : 'Receita Importada'),
+          type: isExpense ? 'expense' : 'income',
+          amount: absAmt,
+          category: 'Outros',
+          date: foundDate || getTodayString()
+        });
+      }
+    }
+  }
+
+  return transactions;
+}
+
+function setupStatementDropzone() {
+  const dropzone = document.getElementById('bankStatementDropzone');
+  const fileInput = document.getElementById('bankStatementFileInput');
+  const triggerBtn = document.getElementById('triggerStatementFileInputBtn');
+  const feedback = document.getElementById('statementImportFeedback');
+
+  if (!dropzone || !fileInput) return;
+
+  if (triggerBtn) {
+    triggerBtn.onclick = (e) => {
+      e.stopPropagation();
+      fileInput.click();
+    };
+  }
+
+  dropzone.onclick = () => fileInput.click();
+
+  dropzone.ondragover = (e) => {
+    e.preventDefault();
+    dropzone.classList.add('drag-over');
+  };
+
+  dropzone.ondragleave = () => {
+    dropzone.classList.remove('drag-over');
+  };
+
+  dropzone.ondrop = (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('drag-over');
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      handleStatementFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  fileInput.onchange = (e) => {
+    if (e.target.files && e.target.files.length > 0) {
+      handleStatementFile(e.target.files[0]);
+    }
+  };
+
+  function handleStatementFile(file) {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const text = event.target.result;
+        const parsed = parseBankStatement(text, file.name);
+        if (parsed.length > 0) {
+          if (!store.state.finance) store.state.finance = {};
+          if (!Array.isArray(store.state.finance.transactions)) store.state.finance.transactions = [];
+
+          store.state.finance.transactions.push(...parsed);
+          store.save();
+          sound.playSuccessChime();
+
+          if (feedback) {
+            feedback.classList.remove('hidden');
+            feedback.innerHTML = `✅ <strong>${parsed.length} transações importadas com sucesso!</strong> Atualizado no Extrato e Fluxo de Caixa.`;
+            setTimeout(() => feedback.classList.add('hidden'), 8000);
+          }
+
+          renderFinanceHub();
+        } else {
+          alert('Não foram encontradas transações válidas no arquivo fornecido. Verifique se é um arquivo .OFX ou .CSV com colunas de Data e Valor.');
+        }
+      } catch (err) {
+        alert('Erro ao processar arquivo de extrato: ' + err.message);
+      }
+    };
+    reader.readAsText(file);
+  }
+}
+
+function openEditInvestmentModal(inv) {
+  const title = document.getElementById('investmentModalTitle');
+  const idInput = document.getElementById('editInvestmentId');
+  const tickerInput = document.getElementById('investTickerInput');
+  const nameInput = document.getElementById('investNameInput');
+  const catSelect = document.getElementById('investCategorySelect');
+  const instInput = document.getElementById('investInstitutionInput');
+  const qtyInput = document.getElementById('investQuantityInput');
+  const avgInput = document.getElementById('investAvgPriceInput');
+  const curInput = document.getElementById('investCurrentPriceInput');
+
+  if (title) title.textContent = 'Editar Ativo da Carteira';
+  if (idInput) idInput.value = inv.id;
+  if (tickerInput) tickerInput.value = inv.ticker;
+  if (nameInput) nameInput.value = inv.name || '';
+  if (catSelect) catSelect.value = inv.category || 'stocks';
+  if (instInput) instInput.value = inv.institution || 'Nubank';
+  if (qtyInput) qtyInput.value = inv.quantity;
+  if (avgInput) avgInput.value = inv.avgPrice;
+  if (curInput) curInput.value = inv.currentPrice || inv.avgPrice;
+
+  openModal('newInvestmentModal');
+}
+
+function openCreateInvestmentForBank(bankName) {
+  const idInput = document.getElementById('editInvestmentId');
+  const title = document.getElementById('investmentModalTitle');
+  const tickerInput = document.getElementById('investTickerInput');
+  const nameInput = document.getElementById('investNameInput');
+  const instInput = document.getElementById('investInstitutionInput');
+  const qtyInput = document.getElementById('investQuantityInput');
+  const avgInput = document.getElementById('investAvgPriceInput');
+  const curInput = document.getElementById('investCurrentPriceInput');
+
+  if (title) title.textContent = `Novo Aporte em ${bankName}`;
+  if (idInput) idInput.value = '';
+  if (tickerInput) tickerInput.value = '';
+  if (nameInput) nameInput.value = '';
+  if (instInput) instInput.value = bankName;
+  if (qtyInput) qtyInput.value = '';
+  if (avgInput) avgInput.value = '';
+  if (curInput) curInput.value = '';
+
+  openModal('newInvestmentModal');
+  setTimeout(() => { if (tickerInput) tickerInput.focus(); }, 50);
+}
+
+function setupInvestmentModals() {
+  // New / Edit Investment Modal
+  const openInvestBtn = document.getElementById('openNewInvestmentModalBtn');
+  const closeInvestBtn = document.getElementById('closeNewInvestmentModal');
+  const saveInvestBtn = document.getElementById('saveInvestmentBtn');
+
+  if (openInvestBtn) {
+    openInvestBtn.onclick = () => {
+      sound.playPop();
+      document.getElementById('editInvestmentId').value = '';
+      document.getElementById('investmentModalTitle').textContent = 'Novo Ativo na Carteira';
+      document.getElementById('investTickerInput').value = '';
+      document.getElementById('investNameInput').value = '';
+      document.getElementById('investInstitutionInput').value = '';
+      document.getElementById('investQuantityInput').value = '';
+      document.getElementById('investAvgPriceInput').value = '';
+      document.getElementById('investCurrentPriceInput').value = '';
+      openModal('newInvestmentModal');
+      setTimeout(() => document.getElementById('investTickerInput').focus(), 50);
+    };
+  }
+
+  if (closeInvestBtn) closeInvestBtn.onclick = () => closeAllModals();
+
+  if (saveInvestBtn) {
+    saveInvestBtn.onclick = () => {
+      const id = document.getElementById('editInvestmentId').value;
+      const ticker = document.getElementById('investTickerInput').value.trim().toUpperCase();
+      const name = document.getElementById('investNameInput').value.trim();
+      const category = document.getElementById('investCategorySelect').value;
+      const institution = document.getElementById('investInstitutionInput').value.trim() || 'Geral';
+      const quantity = parseFloat(document.getElementById('investQuantityInput').value);
+      const avgPrice = parseFloat(document.getElementById('investAvgPriceInput').value);
+      const currentPrice = parseFloat(document.getElementById('investCurrentPriceInput').value) || avgPrice;
+
+      if (!ticker || isNaN(quantity) || quantity <= 0 || isNaN(avgPrice) || avgPrice < 0) {
+        alert('Por favor, preencha o código/ticker, quantidade e preço médio válidos.');
+        return;
+      }
+
+      if (!store.state.finance) store.state.finance = {};
+      if (!Array.isArray(store.state.finance.investments)) store.state.finance.investments = [];
+
+      if (id) {
+        // Edit existing
+        const existing = store.state.finance.investments.find(i => i.id === id);
+        if (existing) {
+          existing.ticker = ticker;
+          existing.name = name;
+          existing.category = category;
+          existing.institution = institution;
+          existing.quantity = quantity;
+          existing.avgPrice = avgPrice;
+          existing.currentPrice = currentPrice;
+        }
+      } else {
+        // Create new
+        store.state.finance.investments.unshift({
+          id: 'inv_' + Date.now(),
+          ticker: ticker,
+          name: name,
+          category: category,
+          institution: institution,
+          quantity: quantity,
+          avgPrice: avgPrice,
+          currentPrice: currentPrice
+        });
+      }
+
+      store.save();
+      sound.playSuccessChime();
+      closeAllModals();
+      renderInvestmentsHub();
+      renderBanksHub();
+    };
+  }
+
+  // Portfolio Goal Modal
+  const openGoalBtn = document.getElementById('openEditPortfolioGoalBtn');
+  const closeGoalBtn = document.getElementById('closePortfolioGoalModal');
+  const saveGoalBtn = document.getElementById('savePortfolioGoalBtn');
+  const goalInput = document.getElementById('goalPortfolioTotalInput');
+
+  if (openGoalBtn) {
+    openGoalBtn.onclick = () => {
+      sound.playPop();
+      if (goalInput) goalInput.value = (store.state.finance && store.state.finance.portfolioGoal) ? store.state.finance.portfolioGoal : 100000;
+      openModal('editPortfolioGoalModal');
+      setTimeout(() => { if (goalInput) goalInput.focus(); }, 50);
+    };
+  }
+
+  if (closeGoalBtn) closeGoalBtn.onclick = () => closeAllModals();
+
+  if (saveGoalBtn) {
+    saveGoalBtn.onclick = () => {
+      const val = parseFloat(goalInput.value);
+      if (isNaN(val) || val <= 0) return;
+      if (!store.state.finance) store.state.finance = {};
+      store.state.finance.portfolioGoal = val;
+      store.save();
+      sound.playSuccessChime();
+      closeAllModals();
+      renderInvestmentsHub();
+    };
+  }
+
+  // New Bank Modal
+  const openBankBtn = document.getElementById('openNewBankBtn');
+  const closeBankBtn = document.getElementById('closeNewBankModal');
+  const saveBankBtn = document.getElementById('saveBankBtn');
+  const bankNameInput = document.getElementById('bankNameInput');
+  const bankTypeSelect = document.getElementById('bankTypeSelect');
+
+  if (openBankBtn) {
+    openBankBtn.onclick = () => {
+      sound.playPop();
+      if (bankNameInput) bankNameInput.value = '';
+      openModal('newBankModal');
+      setTimeout(() => { if (bankNameInput) bankNameInput.focus(); }, 50);
+    };
+  }
+
+  if (closeBankBtn) closeBankBtn.onclick = () => closeAllModals();
+
+  if (saveBankBtn) {
+    saveBankBtn.onclick = () => {
+      const name = bankNameInput.value.trim();
+      const type = bankTypeSelect.value;
+      if (!name) return;
+
+      if (!store.state.finance) store.state.finance = {};
+      if (!Array.isArray(store.state.finance.connectedBanks)) store.state.finance.connectedBanks = [];
+
+      store.state.finance.connectedBanks.push({
+        id: 'b_' + Date.now(),
+        name: name,
+        type: type,
+        icon: '🏦',
+        status: 'Ativo',
+        lastSync: 'Recém-adicionado'
+      });
+
+      store.save();
+      sound.playSuccessChime();
+      closeAllModals();
+      renderBanksHub();
+    };
+  }
+
+  // Filter bindings
+  const catFilter = document.getElementById('investCategoryFilter');
+  if (catFilter) {
+    catFilter.onchange = (e) => {
+      investCurrentCategoryFilter = e.target.value;
+      renderInvestmentsTable();
+    };
+  }
+
+  const bankFilter = document.getElementById('investBankFilter');
+  if (bankFilter) {
+    bankFilter.onchange = (e) => {
+      investCurrentBankFilter = e.target.value;
+      renderInvestmentsTable();
+    };
+  }
 }
 
 function setupFinanceModals() {
