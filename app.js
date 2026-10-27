@@ -26,6 +26,31 @@ const INITIAL_DATA = {
   theme: 'dark',
   water: 1250, // ml
   waterGoal: 2500,
+  mainGoal: {
+    title: 'Lançar Produto Digital & Atingir R$ 50k/mês',
+    subtitle: 'Construir independência operacional e financeira através de excelência',
+    category: 'work',
+    deadline: '2026-12-31',
+    unit: 'R$',
+    targetValue: 50000,
+    currentValue: 18500,
+    whyItMatters: 'Garantir liberdade de tempo e geográfica para mim e minha família, trabalhando com paixão e impacto real.',
+    dailyOneThing: 'Fechar as 3 primeiras parcerias de distribuição estratégicas',
+    dailyOneThingCompleted: false,
+    dailyOneThingLastDate: getTodayString(),
+    milestones: [
+      { id: 'mg_m1', title: 'Validar protótipo com 20 usuários beta', targetDate: '2026-11-15', done: true },
+      { id: 'mg_m2', title: 'Implementar fluxo completo de vendas e onboarding', targetDate: '2026-11-30', done: true },
+      { id: 'mg_m3', title: 'Alcançar os primeiros 50 clientes ativos recorrentes', targetDate: '2026-12-15', done: false },
+      { id: 'mg_m4', title: 'Escalar canais de aquisição para meta final de R$ 50k', targetDate: '2026-12-31', done: false }
+    ],
+    nonNegotiables: [
+      { id: 'nn1', text: '3 horas de foco profundo ininterrupto todas as manhãs' },
+      { id: 'nn2', text: 'Zero reuniões ou redes sociais antes do meio-dia' },
+      { id: 'nn3', text: 'Revisar métricas e aprendizados todo domingo às 18h' }
+    ],
+    notes: 'Lembre-se: o segredo não é fazer mais coisas, e sim fazer o essencial com consistência máxima todos os dias.'
+  },
   tasks: [
     { id: 't1', title: 'Definir prioridades estratégicas da semana', area: 'work', priority: 'high', completed: true, date: getTodayString() },
     { id: 't2', title: 'Revisar proposta e entregar versão final', area: 'work', priority: 'normal', completed: false, date: getTodayString() },
@@ -357,6 +382,26 @@ function getEmptyUserData() {
       dreams: [],
       sideQuests: []
     },
+    mainGoal: {
+      title: 'Minha Meta Principal',
+      subtitle: 'Defina seu foco supremo e o objetivo que mudará seu jogo',
+      category: 'work',
+      deadline: '',
+      unit: '%',
+      targetValue: 100,
+      currentValue: 0,
+      whyItMatters: '',
+      dailyOneThing: '',
+      dailyOneThingCompleted: false,
+      dailyOneThingLastDate: '',
+      milestones: [],
+      nonNegotiables: [
+        { id: 'nn1', text: 'Bloco de foco diário na Única Coisa' },
+        { id: 'nn2', text: 'Dizer não a distrações secundárias' },
+        { id: 'nn3', text: 'Consistência acima de intensidade súbita' }
+      ],
+      notes: ''
+    },
     mindsetQuotes: [
       '"A simplicidade é o grau máximo de sofisticação." — Steve Jobs',
       '"Foco significa dizer não a centenas de outras boas ideias." — Steve Jobs',
@@ -501,6 +546,36 @@ class Store {
         if (parsed.water === undefined) parsed.water = 0;
         if (!parsed.waterGoal) parsed.waterGoal = 2500;
         if (!parsed.theme) parsed.theme = 'dark';
+        if (!parsed.mainGoal || typeof parsed.mainGoal !== 'object') {
+          parsed.mainGoal = {
+            title: 'Minha Meta Principal',
+            subtitle: 'Defina seu foco supremo e o objetivo que mudará seu jogo',
+            category: 'work',
+            deadline: '',
+            unit: '%',
+            targetValue: 100,
+            currentValue: 0,
+            whyItMatters: '',
+            dailyOneThing: '',
+            dailyOneThingCompleted: false,
+            dailyOneThingLastDate: '',
+            milestones: [],
+            nonNegotiables: [
+              { id: 'nn1', text: 'Bloco de foco diário na Única Coisa' },
+              { id: 'nn2', text: 'Dizer não a distrações secundárias' },
+              { id: 'nn3', text: 'Consistência acima de intensidade súbita' }
+            ],
+            notes: ''
+          };
+        }
+        if (!Array.isArray(parsed.mainGoal.milestones)) parsed.mainGoal.milestones = [];
+        if (!Array.isArray(parsed.mainGoal.nonNegotiables)) {
+          parsed.mainGoal.nonNegotiables = [
+            { id: 'nn1', text: 'Bloco de foco diário na Única Coisa' },
+            { id: 'nn2', text: 'Dizer não a distrações secundárias' },
+            { id: 'nn3', text: 'Consistência acima de intensidade súbita' }
+          ];
+        }
         if (parsed.habits && Array.isArray(parsed.habits)) {
           parsed.habits.forEach(h => {
             if (!h.bestStreak) h.bestStreak = Math.max(h.streak || 0, Math.round((h.streak || 0) * 1.5) || 7);
@@ -888,6 +963,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // Event Listeners: Focus Tasks & Steppers
   setupFocusTasksEvents();
 
+  // Event Listeners: Meta Principal (North Star)
+  setupMainGoalEvents();
+
   // Event Listeners: Water Tracker
   document.getElementById('addWaterBtn').addEventListener('click', () => {
     sound.playPop();
@@ -983,6 +1061,13 @@ function renderAll() {
   renderWaterTracker();
   renderActivityRings();
   renderCounts();
+  renderMainGoalBadge();
+  renderTodayNorthStarBanner();
+
+  const mainGoalView = document.getElementById('viewMainGoal');
+  if (mainGoalView && mainGoalView.classList.contains('active-view')) {
+    renderMainGoalView();
+  }
 
   const habitsView = document.getElementById('viewHabits');
   if (habitsView && habitsView.classList.contains('active-view')) {
@@ -1578,6 +1663,9 @@ function switchTab(tabName) {
 
   if (tabName === 'today') {
     document.getElementById('viewToday').classList.add('active-view');
+  } else if (tabName === 'mainGoal') {
+    document.getElementById('viewMainGoal').classList.add('active-view');
+    renderMainGoalView();
   } else if (tabName === 'focus') {
     document.getElementById('viewFocus').classList.add('active-view');
     renderFocusSection();
@@ -6717,4 +6805,606 @@ function getLast7Days() {
     });
   }
   return days;
+}
+
+
+// =============================================================================
+// 21. META PRINCIPAL (NORTH STAR & THE ONE THING) ENGINE
+// =============================================================================
+
+function getMainGoal() {
+  if (!store.state.mainGoal || typeof store.state.mainGoal !== 'object') {
+    store.state.mainGoal = {
+      title: 'Minha Meta Principal',
+      subtitle: 'Defina seu foco supremo e o objetivo que mudará seu jogo',
+      category: 'work',
+      deadline: '',
+      unit: '%',
+      targetValue: 100,
+      currentValue: 0,
+      whyItMatters: '',
+      dailyOneThing: '',
+      dailyOneThingCompleted: false,
+      dailyOneThingLastDate: '',
+      milestones: [],
+      nonNegotiables: [
+        { id: 'nn1', text: 'Bloco de foco diário na Única Coisa' },
+        { id: 'nn2', text: 'Dizer não a distrações secundárias' },
+        { id: 'nn3', text: 'Consistência acima de intensidade súbita' }
+      ],
+      notes: ''
+    };
+  }
+  if (!Array.isArray(store.state.mainGoal.milestones)) store.state.mainGoal.milestones = [];
+  if (!Array.isArray(store.state.mainGoal.nonNegotiables)) {
+    store.state.mainGoal.nonNegotiables = [
+      { id: 'nn1', text: 'Bloco de foco diário na Única Coisa' },
+      { id: 'nn2', text: 'Dizer não a distrações secundárias' },
+      { id: 'nn3', text: 'Consistência acima de intensidade súbita' }
+    ];
+  }
+  return store.state.mainGoal;
+}
+
+function calculateMainGoalProgress(mg) {
+  if (mg.targetValue && Number(mg.targetValue) > 0) {
+    const cur = Number(mg.currentValue) || 0;
+    const tgt = Number(mg.targetValue);
+    return Math.min(100, Math.max(0, Math.round((cur / tgt) * 100)));
+  }
+  if (mg.milestones && mg.milestones.length > 0) {
+    const completed = mg.milestones.filter(m => m.done).length;
+    return Math.round((completed / mg.milestones.length) * 100);
+  }
+  return 0;
+}
+
+function formatGoalValue(val, unit) {
+  const num = Number(val) || 0;
+  const u = (unit || '').trim();
+  if (u === 'R$' || u.toLowerCase() === 'reais') {
+    return 'R$ ' + num.toLocaleString('pt-BR');
+  }
+  if (u === '%') {
+    return num + '%';
+  }
+  if (u) {
+    return num.toLocaleString('pt-BR') + ' ' + u;
+  }
+  return num.toLocaleString('pt-BR');
+}
+
+function renderMainGoalBadge() {
+  const badge = document.getElementById('mainGoalPctBadge');
+  if (!badge) return;
+  const mg = getMainGoal();
+  const pct = calculateMainGoalProgress(mg);
+  badge.textContent = pct + '%';
+}
+
+function renderTodayNorthStarBanner() {
+  const banner = document.getElementById('todayNorthStarBanner');
+  if (!banner) return;
+  const mg = getMainGoal();
+  const pct = calculateMainGoalProgress(mg);
+
+  const titleEl = document.getElementById('todayNorthStarTitle');
+  const pctEl = document.getElementById('todayNorthStarPct');
+  const oneThingValEl = document.getElementById('todayNorthStarOneThingVal');
+
+  if (titleEl) titleEl.textContent = mg.title || 'Defina sua Meta Principal';
+  if (pctEl) pctEl.textContent = pct + '%';
+
+  if (oneThingValEl) {
+    if (mg.dailyOneThing) {
+      oneThingValEl.textContent = (mg.dailyOneThingCompleted ? '✓ ' : '') + mg.dailyOneThing;
+      oneThingValEl.style.textDecoration = mg.dailyOneThingCompleted ? 'line-through' : 'none';
+      oneThingValEl.style.opacity = mg.dailyOneThingCompleted ? '0.7' : '1';
+    } else {
+      oneThingValEl.textContent = 'Clique para definir a Única Coisa de hoje';
+      oneThingValEl.style.textDecoration = 'none';
+      oneThingValEl.style.opacity = '0.7';
+    }
+  }
+}
+
+function renderMainGoalView() {
+  const mg = getMainGoal();
+  const pct = calculateMainGoalProgress(mg);
+
+  // 1. Header & Hero Meta
+  const titleDisplay = document.getElementById('mgTitleDisplay');
+  const subtitleDisplay = document.getElementById('mgSubtitleDisplay');
+  const categoryPill = document.getElementById('mgCategoryPill');
+  const countdownPill = document.getElementById('mgCountdownPill');
+  const statusBadge = document.getElementById('mgStatusBadge');
+  const whyText = document.getElementById('mgWhyText');
+
+  if (titleDisplay) titleDisplay.textContent = mg.title || 'Minha Meta Principal';
+  if (subtitleDisplay) subtitleDisplay.textContent = mg.subtitle || 'Defina seu foco supremo e o objetivo que mudará seu jogo';
+
+  if (categoryPill) {
+    const areaMeta = LIFE_AREAS[mg.category] || LIFE_AREAS.work;
+    categoryPill.textContent = areaMeta.label;
+    categoryPill.style.color = areaMeta.color;
+    categoryPill.style.borderColor = areaMeta.color + '40';
+    categoryPill.style.background = areaMeta.color + '20';
+  }
+
+  if (countdownPill) {
+    if (mg.deadline) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const deadlineDate = new Date(mg.deadline + 'T00:00:00');
+      const diffTime = deadlineDate.getTime() - today.getTime();
+      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+      if (diffDays > 1) {
+        countdownPill.textContent = '⏳ ' + diffDays + ' dias restantes';
+        countdownPill.style.color = 'var(--accent-yellow)';
+      } else if (diffDays === 1) {
+        countdownPill.textContent = '⏳ Vence amanhã!';
+        countdownPill.style.color = 'var(--accent-orange)';
+      } else if (diffDays === 0) {
+        countdownPill.textContent = '🔥 Vence hoje!';
+        countdownPill.style.color = 'var(--accent-red)';
+      } else {
+        countdownPill.textContent = '⚠️ Expirou há ' + Math.abs(diffDays) + ' dias';
+        countdownPill.style.color = 'var(--accent-red)';
+      }
+    } else {
+      countdownPill.textContent = '🗓️ Sem prazo definido';
+      countdownPill.style.color = 'var(--text-tertiary)';
+    }
+  }
+
+  if (statusBadge) {
+    if (pct >= 100) {
+      statusBadge.textContent = '🏆 100% Concluído!';
+      statusBadge.style.color = 'var(--accent-green)';
+    } else {
+      statusBadge.textContent = pct + '% Concluído';
+      statusBadge.style.color = 'var(--accent-blue)';
+    }
+  }
+
+  if (whyText) {
+    whyText.textContent = mg.whyItMatters ? ('"' + mg.whyItMatters + '"') : '"Defina o propósito profundo e o porquê desta meta ser inegociável."';
+  }
+
+  // 2. SVG Ring & Progress Controller
+  const ring = document.getElementById('mainGoalSvgRing');
+  const ringCenterPct = document.getElementById('mgRingCenterPct');
+  const circumference = 2 * Math.PI * 66; // ~414.69
+  if (ring) {
+    const offset = circumference - (pct / 100 * circumference);
+    ring.style.strokeDashoffset = offset;
+  }
+  if (ringCenterPct) {
+    ringCenterPct.textContent = pct + '%';
+  }
+
+  const currentValDisplay = document.getElementById('mgCurrentValDisplay');
+  const targetValDisplay = document.getElementById('mgTargetValDisplay');
+  const barFill = document.getElementById('mgBarFill');
+  const remainingText = document.getElementById('mgRemainingText');
+  const stepInput = document.getElementById('mgStepInput');
+
+  if (currentValDisplay) currentValDisplay.textContent = formatGoalValue(mg.currentValue, mg.unit);
+  if (targetValDisplay) targetValDisplay.textContent = formatGoalValue(mg.targetValue, mg.unit);
+  if (barFill) barFill.style.width = Math.min(100, pct) + '%';
+
+  if (remainingText) {
+    const cur = Number(mg.currentValue) || 0;
+    const tgt = Number(mg.targetValue) || 0;
+    if (tgt > cur) {
+      const diff = tgt - cur;
+      remainingText.textContent = 'Faltam ' + formatGoalValue(diff, mg.unit) + ' para atingir o objetivo supremo';
+    } else if (tgt > 0 && cur >= tgt) {
+      remainingText.textContent = '🎉 Parabéns! Meta principal alcançada com excelência!';
+    } else {
+      remainingText.textContent = 'Atualize o valor acumulado conforme for progredindo';
+    }
+  }
+
+  if (stepInput && document.activeElement !== stepInput) {
+    stepInput.value = mg.currentValue || 0;
+  }
+
+  // 3. The ONE Thing of Today
+  const todayStr = getTodayString();
+  if (mg.dailyOneThingLastDate !== todayStr) {
+    if (mg.dailyOneThingCompleted) {
+      mg.dailyOneThingCompleted = false;
+    }
+    mg.dailyOneThingLastDate = todayStr;
+    store.save();
+  }
+
+  const oneThingTaskEl = document.getElementById('mgDailyOneThingText');
+  const toggleBtn = document.getElementById('toggleDailyOneThingBtn');
+
+  if (oneThingTaskEl) {
+    oneThingTaskEl.textContent = mg.dailyOneThing || 'Defina agora a sua ÚNICA prioridade de ouro para o dia de hoje';
+    oneThingTaskEl.classList.toggle('completed', Boolean(mg.dailyOneThingCompleted));
+  }
+
+  if (toggleBtn) {
+    toggleBtn.classList.toggle('completed', Boolean(mg.dailyOneThingCompleted));
+  }
+
+  // 4. Strategic Milestones
+  renderMainGoalMilestones(mg);
+
+  // 5. Non-Negotiables
+  renderMainGoalNonNegotiables(mg);
+
+  // 6. Notes
+  const notesInput = document.getElementById('mainGoalNotesInput');
+  if (notesInput && document.activeElement !== notesInput) {
+    notesInput.value = mg.notes || '';
+  }
+
+  // Also update badge and today banner
+  renderMainGoalBadge();
+  renderTodayNorthStarBanner();
+}
+
+function renderMainGoalMilestones(mg) {
+  const container = document.getElementById('mainGoalMilestonesList');
+  const summaryEl = document.getElementById('milestonesProgressSummary');
+  if (!container) return;
+
+  const milestones = mg.milestones || [];
+  const completedCount = milestones.filter(m => m.done).length;
+
+  if (summaryEl) {
+    if (milestones.length === 0) {
+      summaryEl.textContent = 'Nenhuma etapa cadastrada ainda';
+    } else {
+      const pct = Math.round((completedCount / milestones.length) * 100);
+      summaryEl.textContent = completedCount + ' de ' + milestones.length + ' etapas concluídas (' + pct + '%)';
+    }
+  }
+
+  if (milestones.length === 0) {
+    container.innerHTML = `
+      <div style="padding: 16px; background: var(--bg-pill); border: 1px dashed var(--border-subtle); border-radius: var(--radius-md); font-size: 13px; color: var(--text-tertiary); text-align: center;">
+        🚩 Nenhum marco estratégico cadastrado. Clique em <strong>"+ Marco"</strong> acima para dividir sua meta em etapas claras.
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = milestones.map((m) => {
+    let dateStr = '';
+    if (m.targetDate) {
+      try {
+        const parts = m.targetDate.split('-');
+        if (parts.length === 3) {
+          dateStr = '📅 ' + parts[2] + '/' + parts[1] + '/' + parts[0];
+        }
+      } catch (e) {
+        dateStr = m.targetDate;
+      }
+    }
+
+    return `
+      <div class="milestone-item ${m.done ? 'done' : ''}" data-milestone-id="${m.id}">
+        <button class="milestone-checkbox" data-milestone-toggle="${m.id}" title="${m.done ? 'Marcar como pendente' : 'Concluir marco'}">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+        </button>
+        <div class="milestone-info">
+          <span class="milestone-title">${escapeHtml(m.title)}</span>
+          ${dateStr ? `<span class="milestone-date">${dateStr}</span>` : ''}
+        </div>
+        <button class="milestone-delete-btn" data-milestone-delete="${m.id}" title="Remover marco">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+    `;
+  }).join('');
+
+  container.querySelectorAll('[data-milestone-toggle]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.milestoneToggle;
+      const target = mg.milestones.find(m => m.id === id);
+      if (target) {
+        target.done = !target.done;
+        if (target.done) sound.playSuccessChime();
+        else sound.playPop();
+        store.save();
+        renderMainGoalView();
+      }
+    });
+  });
+
+  container.querySelectorAll('[data-milestone-delete]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const id = btn.dataset.milestoneDelete;
+      sound.playPop();
+      mg.milestones = mg.milestones.filter(m => m.id !== id);
+      store.save();
+      renderMainGoalView();
+    });
+  });
+}
+
+function renderMainGoalNonNegotiables(mg) {
+  const container = document.getElementById('mainGoalNonNegotiablesList');
+  if (!container) return;
+
+  const rules = mg.nonNegotiables && mg.nonNegotiables.length > 0 ? mg.nonNegotiables : [
+    { id: 'nn1', text: 'Bloco de foco diário na Única Coisa' },
+    { id: 'nn2', text: 'Dizer não a distrações secundárias' },
+    { id: 'nn3', text: 'Consistência acima de intensidade súbita' }
+  ];
+
+  container.innerHTML = rules.map((r, i) => `
+    <div class="non-negotiable-item">
+      <span class="non-neg-badge">${i + 1}</span>
+      <span class="non-neg-text">${escapeHtml(r.text)}</span>
+    </div>
+  `).join('');
+}
+
+function setupMainGoalEvents() {
+  // 1. Link from Today view to Main Goal tab
+  const todayGoBtn = document.getElementById('todayGoToMainGoalBtn');
+  if (todayGoBtn) {
+    todayGoBtn.addEventListener('click', () => {
+      sound.playPop();
+      switchTab('mainGoal');
+    });
+  }
+
+  // 2. Open Edit Main Goal Modal
+  const openEditBtn = document.getElementById('openEditMainGoalBtn');
+  if (openEditBtn) {
+    openEditBtn.addEventListener('click', () => {
+      sound.playPop();
+      const mg = getMainGoal();
+      document.getElementById('editMgTitleInput').value = mg.title || '';
+      document.getElementById('editMgSubtitleInput').value = mg.subtitle || '';
+      document.getElementById('editMgCategorySelect').value = mg.category || 'work';
+      document.getElementById('editMgDeadlineInput').value = mg.deadline || '';
+      document.getElementById('editMgUnitInput').value = mg.unit || 'R$';
+      document.getElementById('editMgTargetValInput').value = mg.targetValue || 0;
+      document.getElementById('editMgCurrentValInput').value = mg.currentValue || 0;
+      document.getElementById('editMgWhyInput').value = mg.whyItMatters || '';
+      openModal('editMainGoalModal');
+    });
+  }
+
+  const closeEditModalBtn = document.getElementById('closeEditMainGoalModal');
+  if (closeEditModalBtn) {
+    closeEditModalBtn.addEventListener('click', () => closeModal('editMainGoalModal'));
+  }
+
+  // 3. Save Edit Main Goal Modal
+  const saveEditBtn = document.getElementById('saveEditMainGoalBtn');
+  if (saveEditBtn) {
+    saveEditBtn.addEventListener('click', () => {
+      sound.playSuccessChime();
+      const mg = getMainGoal();
+      mg.title = document.getElementById('editMgTitleInput').value.trim() || 'Minha Meta Principal';
+      mg.subtitle = document.getElementById('editMgSubtitleInput').value.trim();
+      mg.category = document.getElementById('editMgCategorySelect').value;
+      mg.deadline = document.getElementById('editMgDeadlineInput').value;
+      mg.unit = document.getElementById('editMgUnitInput').value.trim() || '%';
+      mg.targetValue = parseFloat(document.getElementById('editMgTargetValInput').value) || 0;
+      mg.currentValue = parseFloat(document.getElementById('editMgCurrentValInput').value) || 0;
+      mg.whyItMatters = document.getElementById('editMgWhyInput').value.trim();
+
+      store.save();
+      closeModal('editMainGoalModal');
+      renderAll();
+      renderMainGoalView();
+    });
+  }
+
+  // 4. Steppers & Quick Value updater
+  const decBtn = document.getElementById('mgDecStepBtn');
+  const incBtn = document.getElementById('mgIncStepBtn');
+  const stepInput = document.getElementById('mgStepInput');
+  const saveProgressBtn = document.getElementById('mgSaveProgressBtn');
+
+  function getStepDelta(unit, target) {
+    const u = (unit || '').toLowerCase();
+    if (u === 'r$' || u === 'reais') return 1000;
+    if (target > 500) return 50;
+    if (target > 50) return 5;
+    return 1;
+  }
+
+  if (decBtn) {
+    decBtn.addEventListener('click', () => {
+      sound.playPop();
+      const mg = getMainGoal();
+      const delta = getStepDelta(mg.unit, mg.targetValue);
+      let cur = parseFloat(stepInput.value) || 0;
+      cur = Math.max(0, cur - delta);
+      stepInput.value = cur;
+      mg.currentValue = cur;
+      store.save();
+      renderMainGoalView();
+    });
+  }
+
+  if (incBtn) {
+    incBtn.addEventListener('click', () => {
+      sound.playPop();
+      const mg = getMainGoal();
+      const delta = getStepDelta(mg.unit, mg.targetValue);
+      let cur = parseFloat(stepInput.value) || 0;
+      cur = cur + delta;
+      stepInput.value = cur;
+      mg.currentValue = cur;
+      store.save();
+      renderMainGoalView();
+    });
+  }
+
+  if (saveProgressBtn) {
+    saveProgressBtn.addEventListener('click', () => {
+      sound.playSuccessChime();
+      const mg = getMainGoal();
+      const cur = parseFloat(stepInput.value) || 0;
+      mg.currentValue = cur;
+      store.save();
+      renderMainGoalView();
+      saveProgressBtn.textContent = 'Salvo! ✓';
+      setTimeout(() => { saveProgressBtn.textContent = 'Salvar'; }, 1500);
+    });
+  }
+
+  // 5. The ONE Thing of Today
+  const toggleDailyOneThingBtn = document.getElementById('toggleDailyOneThingBtn');
+  if (toggleDailyOneThingBtn) {
+    toggleDailyOneThingBtn.addEventListener('click', () => {
+      const mg = getMainGoal();
+      mg.dailyOneThingCompleted = !mg.dailyOneThingCompleted;
+      mg.dailyOneThingLastDate = getTodayString();
+      if (mg.dailyOneThingCompleted) sound.playSuccessChime();
+      else sound.playPop();
+      store.save();
+      renderMainGoalView();
+    });
+  }
+
+  const editDailyOneThingBtn = document.getElementById('editDailyOneThingBtn');
+  if (editDailyOneThingBtn) {
+    editDailyOneThingBtn.addEventListener('click', () => {
+      sound.playPop();
+      const mg = getMainGoal();
+      document.getElementById('dailyOneThingInput').value = mg.dailyOneThing || '';
+      openModal('editDailyOneThingModal');
+    });
+  }
+
+  const closeEditDailyModalBtn = document.getElementById('closeEditDailyOneThingModal');
+  if (closeEditDailyModalBtn) {
+    closeEditDailyModalBtn.addEventListener('click', () => closeModal('editDailyOneThingModal'));
+  }
+
+  const saveDailyOneThingBtn = document.getElementById('saveDailyOneThingBtn');
+  if (saveDailyOneThingBtn) {
+    saveDailyOneThingBtn.addEventListener('click', () => {
+      const text = document.getElementById('dailyOneThingInput').value.trim();
+      if (!text) return;
+      sound.playSuccessChime();
+      const mg = getMainGoal();
+      mg.dailyOneThing = text;
+      mg.dailyOneThingCompleted = false;
+      mg.dailyOneThingLastDate = getTodayString();
+      store.save();
+      closeModal('editDailyOneThingModal');
+      renderMainGoalView();
+    });
+  }
+
+  // 6. New Milestone Modal
+  const openNewMilestoneBtn = document.getElementById('openNewMilestoneBtn');
+  const addMilestoneQuickBtn = document.getElementById('addMilestoneQuickBtn');
+
+  function openMilestoneModal() {
+    sound.playPop();
+    document.getElementById('milestoneTitleInput').value = '';
+    document.getElementById('milestoneDateInput').value = '';
+    openModal('newMilestoneModal');
+  }
+
+  if (openNewMilestoneBtn) openNewMilestoneBtn.addEventListener('click', openMilestoneModal);
+  if (addMilestoneQuickBtn) addMilestoneQuickBtn.addEventListener('click', openMilestoneModal);
+
+  const closeNewMilestoneBtn = document.getElementById('closeNewMilestoneModal');
+  if (closeNewMilestoneBtn) {
+    closeNewMilestoneBtn.addEventListener('click', () => closeModal('newMilestoneModal'));
+  }
+
+  const saveNewMilestoneBtn = document.getElementById('saveNewMilestoneBtn');
+  if (saveNewMilestoneBtn) {
+    saveNewMilestoneBtn.addEventListener('click', () => {
+      const title = document.getElementById('milestoneTitleInput').value.trim();
+      if (!title) return;
+      const targetDate = document.getElementById('milestoneDateInput').value;
+      sound.playSuccessChime();
+      const mg = getMainGoal();
+      mg.milestones.push({
+        id: 'mg_m_' + Date.now(),
+        title: title,
+        targetDate: targetDate,
+        done: false
+      });
+      store.save();
+      closeModal('newMilestoneModal');
+      renderMainGoalView();
+    });
+  }
+
+  // 7. Non-Negotiables Modal
+  const editNonNegBtn = document.getElementById('editNonNegotiablesBtn');
+  if (editNonNegBtn) {
+    editNonNegBtn.addEventListener('click', () => {
+      sound.playPop();
+      const mg = getMainGoal();
+      const rules = mg.nonNegotiables || [];
+      document.getElementById('nonNeg1Input').value = (rules[0] && rules[0].text) || '';
+      document.getElementById('nonNeg2Input').value = (rules[1] && rules[1].text) || '';
+      document.getElementById('nonNeg3Input').value = (rules[2] && rules[2].text) || '';
+      openModal('editNonNegotiablesModal');
+    });
+  }
+
+  const closeNonNegBtn = document.getElementById('closeEditNonNegotiablesModal');
+  if (closeNonNegBtn) {
+    closeNonNegBtn.addEventListener('click', () => closeModal('editNonNegotiablesModal'));
+  }
+
+  const saveNonNegBtn = document.getElementById('saveNonNegotiablesBtn');
+  if (saveNonNegBtn) {
+    saveNonNegBtn.addEventListener('click', () => {
+      sound.playSuccessChime();
+      const mg = getMainGoal();
+      const r1 = document.getElementById('nonNeg1Input').value.trim();
+      const r2 = document.getElementById('nonNeg2Input').value.trim();
+      const r3 = document.getElementById('nonNeg3Input').value.trim();
+
+      mg.nonNegotiables = [];
+      if (r1) mg.nonNegotiables.push({ id: 'nn1', text: r1 });
+      if (r2) mg.nonNegotiables.push({ id: 'nn2', text: r2 });
+      if (r3) mg.nonNegotiables.push({ id: 'nn3', text: r3 });
+
+      if (mg.nonNegotiables.length === 0) {
+        mg.nonNegotiables = [
+          { id: 'nn1', text: 'Bloco de foco diário na Única Coisa' },
+          { id: 'nn2', text: 'Dizer não a distrações secundárias' },
+          { id: 'nn3', text: 'Consistência acima de intensidade súbita' }
+        ];
+      }
+
+      store.save();
+      closeModal('editNonNegotiablesModal');
+      renderMainGoalView();
+    });
+  }
+
+  // 8. Vision Notes save
+  const saveNotesBtn = document.getElementById('saveMainGoalNotesBtn');
+  const notesTextarea = document.getElementById('mainGoalNotesInput');
+  if (saveNotesBtn && notesTextarea) {
+    saveNotesBtn.addEventListener('click', () => {
+      sound.playSuccessChime();
+      const mg = getMainGoal();
+      mg.notes = notesTextarea.value;
+      store.save();
+      saveNotesBtn.textContent = 'Salvo! ✓';
+      setTimeout(() => { saveNotesBtn.textContent = 'Salvar'; }, 1500);
+    });
+  }
 }

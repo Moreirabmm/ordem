@@ -82,6 +82,15 @@
           <span>Hoje</span>
           <span class="badge" id="todayPendingBadge">0</span>
         </button>
+        <button class="nav-item" data-tab="mainGoal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <circle cx="12" cy="12" r="6"></circle>
+            <circle cx="12" cy="12" r="2"></circle>
+          </svg>
+          <span>Meta Principal</span>
+          <span class="badge" id="mainGoalPctBadge">0%</span>
+        </button>
         <button class="nav-item" data-tab="focus">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"></circle>
@@ -277,6 +286,25 @@
             </div>
           </div>
 
+          <!-- North Star Banner in Today View -->
+          <div class="today-north-star-card" id="todayNorthStarBanner">
+            <div class="north-star-left">
+              <span class="north-star-icon">🎯</span>
+              <div class="north-star-info">
+                <div class="north-star-top">
+                  <span class="north-star-badge">META PRINCIPAL</span>
+                  <span class="north-star-pct" id="todayNorthStarPct">0%</span>
+                </div>
+                <h4 class="north-star-title" id="todayNorthStarTitle">Defina sua Meta Principal</h4>
+                <div class="north-star-one-thing" id="todayNorthStarOneThingWrapper">
+                  <span class="one-thing-lbl">Ação de Hoje:</span>
+                  <span class="one-thing-val" id="todayNorthStarOneThingVal">Nenhuma ação prioritária definida para hoje</span>
+                </div>
+              </div>
+            </div>
+            <button id="todayGoToMainGoalBtn" class="apple-secondary-btn-sm" style="flex-shrink: 0;">Abrir Meta &rarr;</button>
+          </div>
+
           <!-- Quick Water & Daily Vitality Row -->
           <div class="grid-2-col">
             <!-- Hydro Widget -->
@@ -372,6 +400,183 @@
                 <!-- Rendered dynamically -->
               </div>
             </div>
+          </div>
+
+        </section>
+
+        <!-- ============================================== -->
+        <!-- TAB: META PRINCIPAL (NORTH STAR / THE ONE THING) -->
+        <!-- ============================================== -->
+        <section id="viewMainGoal" class="content-view">
+          
+          <!-- View Header -->
+          <div class="view-header">
+            <div>
+              <p class="date-subtitle">Foco Supremo & North Star Metric</p>
+              <h1 class="page-title">Meta Principal</h1>
+            </div>
+            <div class="view-header-actions" style="display: flex; gap: 8px;">
+              <button id="openNewMilestoneBtn" class="apple-secondary-btn-sm">+ Novo Marco</button>
+              <button id="openEditMainGoalBtn" class="apple-secondary-btn-sm">⚙️ Configurar Meta</button>
+            </div>
+          </div>
+
+          <!-- Hero Card: North Star Goal Overview -->
+          <div class="main-goal-hero-card">
+            <div class="main-goal-hero-header">
+              <div class="main-goal-pills-row">
+                <span class="main-goal-category-pill" id="mgCategoryPill">💼 Trabalho & Projetos</span>
+                <span class="main-goal-countdown-pill" id="mgCountdownPill">⏳ Calculando prazo...</span>
+                <span class="main-goal-status-badge" id="mgStatusBadge">0% Concluído</span>
+              </div>
+              <h2 class="main-goal-title" id="mgTitleDisplay">Minha Meta Principal</h2>
+              <p class="main-goal-subtitle" id="mgSubtitleDisplay">Defina seu foco supremo e o objetivo que mudará seu jogo</p>
+            </div>
+
+            <!-- Por que isso importa (Propósito Maior) -->
+            <div class="main-goal-why-box" id="mgWhyBox">
+              <div class="why-label">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                </svg>
+                <span>PROPÓSITO & CLAREZA</span>
+              </div>
+              <p class="why-text" id="mgWhyText">"Descreva aqui por que alcançar esse objetivo é vital para você e para seu futuro."</p>
+            </div>
+
+            <!-- Progress Ring & Metric Control Grid -->
+            <div class="main-goal-kpi-grid">
+              <!-- Circular Ring -->
+              <div class="main-goal-ring-card">
+                <div class="main-goal-svg-container">
+                  <svg class="main-goal-svg" viewBox="0 0 160 160">
+                    <circle class="ring-bg" cx="80" cy="80" r="66" stroke="rgba(10, 132, 255, 0.15)" stroke-width="14" fill="none"/>
+                    <circle id="mainGoalSvgRing" class="ring-fg" cx="80" cy="80" r="66" stroke="url(#mainGoalGrad)" stroke-width="14" fill="none" stroke-linecap="round" stroke-dasharray="414.69" stroke-dashoffset="414.69"/>
+                    <defs>
+                      <linearGradient id="mainGoalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#0A84FF"/>
+                        <stop offset="50%" stop-color="#5E5CE6"/>
+                        <stop offset="100%" stop-color="#BF5AF2"/>
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div class="main-goal-ring-center">
+                    <span class="ring-center-pct" id="mgRingCenterPct">0%</span>
+                    <span class="ring-center-sub" id="mgRingCenterSub">Progresso</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Numerical Progress & Quick Stepper -->
+              <div class="main-goal-progress-controller">
+                <div class="progress-numbers-row">
+                  <div>
+                    <span class="progress-lbl">Progresso Atual</span>
+                    <div class="progress-big-val" id="mgCurrentValDisplay">0</div>
+                  </div>
+                  <div style="text-align: right;">
+                    <span class="progress-lbl">Objetivo Final</span>
+                    <div class="progress-target-val" id="mgTargetValDisplay">100</div>
+                  </div>
+                </div>
+
+                <!-- Custom Progress Bar -->
+                <div class="main-goal-bar-track">
+                  <div class="main-goal-bar-fill" id="mgBarFill" style="width: 0%;"></div>
+                </div>
+                <div class="progress-remaining-text" id="mgRemainingText">Aguardando progresso</div>
+
+                <!-- Quick Value Stepper / Direct Update -->
+                <div class="main-goal-stepper-box">
+                  <span class="stepper-label">Atualizar Valor:</span>
+                  <div class="stepper-controls">
+                    <button id="mgDecStepBtn" class="stepper-btn" title="Diminuir">-</button>
+                    <input type="number" id="mgStepInput" class="stepper-input" value="0" step="any">
+                    <button id="mgIncStepBtn" class="stepper-btn" title="Aumentar">+</button>
+                    <button id="mgSaveProgressBtn" class="apple-primary-btn-sm">Salvar</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- The ONE Thing of Today (A Única Coisa de Hoje) -->
+          <div class="one-thing-card" id="oneThingCard">
+            <div class="one-thing-header">
+              <div class="one-thing-tag">
+                <span class="pulse-dot"></span>
+                <span>A ÚNICA COISA DE HOJE</span>
+              </div>
+              <button id="editDailyOneThingBtn" class="one-thing-edit-btn" title="Definir Ação de Hoje">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                <span>Editar</span>
+              </button>
+            </div>
+            
+            <div class="one-thing-body">
+              <button id="toggleDailyOneThingBtn" class="one-thing-checkbox-circle" aria-label="Concluir a única coisa de hoje">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                  <polyline points="20 6 9 17 4 12"></polyline>
+                </svg>
+              </button>
+              <div class="one-thing-text-content">
+                <p class="one-thing-question">Qual é a ÚNICA coisa que você fará hoje para mover o ponteiro da sua meta?</p>
+                <h3 class="one-thing-task" id="mgDailyOneThingText">Defina a prioridade de ouro do dia</h3>
+              </div>
+            </div>
+          </div>
+
+          <!-- Two-Column Strategy Section -->
+          <div class="main-goal-columns-grid">
+            
+            <!-- Column 1: Strategic Milestones -->
+            <div class="main-goal-panel">
+              <div class="panel-header">
+                <div>
+                  <h3 class="panel-title">Marcos Estratégicos (Etapas)</h3>
+                  <p class="panel-subtitle" id="milestonesProgressSummary">0 etapas concluídas</p>
+                </div>
+                <button id="addMilestoneQuickBtn" class="apple-secondary-btn-sm">+ Marco</button>
+              </div>
+
+              <div class="milestones-list" id="mainGoalMilestonesList">
+                <!-- Rendered dynamically -->
+              </div>
+            </div>
+
+            <!-- Column 2: Non-Negotiables & Focus Vision -->
+            <div class="main-goal-panel">
+              <!-- Non-Negotiable Rules -->
+              <div class="panel-header">
+                <div>
+                  <h3 class="panel-title">Regras Não-Negociáveis</h3>
+                  <p class="panel-subtitle">3 princípios para blindar sua disciplina diária</p>
+                </div>
+                <button id="editNonNegotiablesBtn" class="apple-secondary-btn-sm">Editar</button>
+              </div>
+
+              <div class="non-negotiables-list" id="mainGoalNonNegotiablesList">
+                <!-- Rendered dynamically -->
+              </div>
+
+              <!-- Notes & Strategic Vision -->
+              <div class="panel-header" style="margin-top: 24px;">
+                <div>
+                  <h3 class="panel-title">Visão Estratégica & Anotações</h3>
+                  <p class="panel-subtitle">Insights, aprendizados e clareza mental</p>
+                </div>
+                <button id="saveMainGoalNotesBtn" class="apple-primary-btn-sm">Salvar</button>
+              </div>
+
+              <div class="main-goal-notes-wrapper">
+                <textarea id="mainGoalNotesInput" class="main-goal-textarea" placeholder="Registre aqui decisões importantes, próximos passos e lembretes para manter o foco total..."></textarea>
+              </div>
+
+            </div>
+
           </div>
 
         </section>
@@ -1458,6 +1663,14 @@
           </svg>
           <span>Hoje</span>
         </button>
+        <button class="mobile-tab-btn" data-tab="mainGoal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <circle cx="12" cy="12" r="6"></circle>
+            <circle cx="12" cy="12" r="2"></circle>
+          </svg>
+          <span>Meta</span>
+        </button>
         <button class="mobile-tab-btn" data-tab="focus">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <circle cx="12" cy="12" r="10"></circle>
@@ -1684,6 +1897,10 @@
         <button class="nav-item area-link mobile-area-choice" data-area="personal" style="padding: 12px;">
           <span class="area-dot dot-personal"></span>
           <span>🌿 Vida Pessoal & Rotina</span>
+        </button>
+        <button class="nav-item mobile-area-choice" data-tab="mainGoal" style="padding: 12px; margin-top: 4px; background: rgba(10, 132, 255, 0.08); border: 1px solid rgba(10, 132, 255, 0.2);">
+          <span style="font-size: 16px;">🎯</span>
+          <span>Meta Principal</span>
         </button>
         <button class="nav-item mobile-area-choice" data-tab="quests" style="padding: 12px; margin-top: 4px; background: rgba(255, 214, 10, 0.08); border: 1px solid rgba(255, 214, 10, 0.2);">
           <span style="font-size: 16px;">🌟</span>
@@ -2798,6 +3015,146 @@
       </div>
       <div class="modal-footer">
         <button id="saveSideQuestBtn" class="apple-primary-btn full-width">Criar Side Quest</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: CONFIGURAR META PRINCIPAL               -->
+  <!-- ============================================== -->
+  <div id="editMainGoalModal" class="modal-backdrop">
+    <div class="modal-card spotlight-card">
+      <div class="spotlight-header">
+        <h3 class="modal-title">🎯 Configurar Meta Principal (North Star)</h3>
+        <button class="close-modal-btn" id="closeEditMainGoalModal">&times;</button>
+      </div>
+      <div class="modal-body-fields">
+        <div class="form-group">
+          <label for="editMgTitleInput">Título da Meta Principal</label>
+          <input type="text" id="editMgTitleInput" class="apple-input" placeholder="Ex: Lançar Produto Digital & Atingir R$ 50k/mês" required>
+        </div>
+        <div class="form-group">
+          <label for="editMgSubtitleInput">Subtítulo / Descrição de Impacto</label>
+          <input type="text" id="editMgSubtitleInput" class="apple-input" placeholder="Ex: Construir independência operacional e financeira através de excelência">
+        </div>
+        <div class="modal-options-row">
+          <div class="option-field">
+            <label for="editMgCategorySelect">Área da Vida:</label>
+            <select id="editMgCategorySelect" class="apple-input">
+              <option value="work">💼 Trabalho & Projetos</option>
+              <option value="finance">💰 Finanças Pessoais</option>
+              <option value="health">🏃 Saúde & Bem-estar</option>
+              <option value="study">🧠 Conhecimento & Mente</option>
+              <option value="personal">🌿 Vida Pessoal & Rotina</option>
+            </select>
+          </div>
+          <div class="option-field">
+            <label for="editMgDeadlineInput">Prazo Final (Deadline):</label>
+            <input type="date" id="editMgDeadlineInput" class="apple-input">
+          </div>
+        </div>
+        <div class="modal-options-row">
+          <div class="option-field">
+            <label for="editMgUnitInput">Unidade de Medida:</label>
+            <input type="text" id="editMgUnitInput" class="apple-input" placeholder="Ex: R$, %, un, kg, clientes" value="R$">
+          </div>
+          <div class="option-field">
+            <label for="editMgTargetValInput">Valor Alvo (Target):</label>
+            <input type="number" id="editMgTargetValInput" class="apple-input" placeholder="Ex: 50000" step="any">
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="editMgCurrentValInput">Valor Atual Acumulado:</label>
+          <input type="number" id="editMgCurrentValInput" class="apple-input" placeholder="Ex: 18500" step="any">
+        </div>
+        <div class="form-group">
+          <label for="editMgWhyInput">Propósito Maior (Por que isso importa?):</label>
+          <textarea id="editMgWhyInput" class="apple-input" style="min-height: 72px;" placeholder="Qual transformação profunda essa conquista trará para sua vida e para quem você ama?"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="saveEditMainGoalBtn" class="apple-primary-btn full-width">Salvar Configurações da Meta</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: NOVO MARCO ESTRATÉGICO                  -->
+  <!-- ============================================== -->
+  <div id="newMilestoneModal" class="modal-backdrop">
+    <div class="modal-card spotlight-card">
+      <div class="spotlight-header">
+        <h3 class="modal-title">🚩 Novo Marco Estratégico (Etapa)</h3>
+        <button class="close-modal-btn" id="closeNewMilestoneModal">&times;</button>
+      </div>
+      <div class="modal-body-fields">
+        <div class="form-group">
+          <label for="milestoneTitleInput">Descrição do Marco</label>
+          <input type="text" id="milestoneTitleInput" class="apple-input" placeholder="Ex: Fechar os 10 primeiros clientes pagantes" required>
+        </div>
+        <div class="form-group">
+          <label for="milestoneDateInput">Data Prevista de Conclusão (Opcional)</label>
+          <input type="date" id="milestoneDateInput" class="apple-input">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="saveNewMilestoneBtn" class="apple-primary-btn full-width">Adicionar Marco</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: EDITAR A ÚNICA COISA DE HOJE            -->
+  <!-- ============================================== -->
+  <div id="editDailyOneThingModal" class="modal-backdrop">
+    <div class="modal-card spotlight-card">
+      <div class="spotlight-header">
+        <h3 class="modal-title">⚡ A Única Coisa de Hoje</h3>
+        <button class="close-modal-btn" id="closeEditDailyOneThingModal">&times;</button>
+      </div>
+      <div class="modal-body-fields">
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 6px;">
+          "Se você pudesse realizar apenas UMA única ação hoje para alavancar sua meta principal, qual seria?"
+        </p>
+        <div class="form-group">
+          <label for="dailyOneThingInput">Ação Prioritária de Hoje</label>
+          <input type="text" id="dailyOneThingInput" class="apple-input" placeholder="Ex: Fechar as 3 primeiras parcerias de distribuição estratégicas" required>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="saveDailyOneThingBtn" class="apple-primary-btn full-width">Definir Ação de Hoje</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: REGRAS NÃO-NEGOCIÁVEIS                  -->
+  <!-- ============================================== -->
+  <div id="editNonNegotiablesModal" class="modal-backdrop">
+    <div class="modal-card spotlight-card">
+      <div class="spotlight-header">
+        <h3 class="modal-title">🛡️ Regras Não-Negociáveis</h3>
+        <button class="close-modal-btn" id="closeEditNonNegotiablesModal">&times;</button>
+      </div>
+      <div class="modal-body-fields">
+        <p style="font-size: 13px; color: var(--text-secondary); margin-bottom: 6px;">
+          Defina até 3 princípios diários invioláveis que protegem sua atenção e garantem o avanço da sua meta.
+        </p>
+        <div class="form-group">
+          <label for="nonNeg1Input">Regra 1:</label>
+          <input type="text" id="nonNeg1Input" class="apple-input" placeholder="Ex: 3 horas de foco profundo ininterrupto todas as manhãs">
+        </div>
+        <div class="form-group">
+          <label for="nonNeg2Input">Regra 2:</label>
+          <input type="text" id="nonNeg2Input" class="apple-input" placeholder="Ex: Zero reuniões ou redes sociais antes do meio-dia">
+        </div>
+        <div class="form-group">
+          <label for="nonNeg3Input">Regra 3:</label>
+          <input type="text" id="nonNeg3Input" class="apple-input" placeholder="Ex: Revisar métricas e aprendizados todo domingo às 18h">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="saveNonNegotiablesBtn" class="apple-primary-btn full-width">Salvar Regras</button>
       </div>
     </div>
   </div>
