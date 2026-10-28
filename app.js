@@ -1917,6 +1917,24 @@ function renderHealthDiet() {
   if (!container) return;
   container.innerHTML = '';
 
+  if (!nutrition.meals || nutrition.meals.length === 0) {
+    container.innerHTML = `
+      <div style="text-align: center; padding: 22px 14px; color: var(--text-tertiary); font-size: 13px;">
+        <p style="margin-bottom: 8px;">Nenhuma refeição cadastrada no momento.</p>
+        <button id="emptyAddMealBtn" class="apple-secondary-btn-sm">+ Nova Refeição</button>
+      </div>
+    `;
+    const emptyBtn = document.getElementById('emptyAddMealBtn');
+    if (emptyBtn) {
+      emptyBtn.onclick = () => {
+        sound.playPop();
+        openModal('newMealModal');
+        setTimeout(() => document.getElementById('mealNameInput')?.focus(), 50);
+      };
+    }
+    return;
+  }
+
   nutrition.meals.forEach(meal => {
     const item = document.createElement('div');
     item.className = `meal-item ${meal.completed ? 'completed' : ''}`;
@@ -1926,11 +1944,17 @@ function renderHealthDiet() {
           <polyline points="20 6 9 17 4 12"></polyline>
         </svg>
       </div>
-      <div class="meal-content">
+      <div class="meal-content" title="Clique para personalizar refeição">
         <div class="meal-name">${escapeHtml(meal.name)}</div>
         <div class="meal-desc">${escapeHtml(meal.items)}</div>
       </div>
-      <span class="meal-cal-badge">${meal.calories} kcal</span>
+      <span class="meal-cal-badge" title="Clique para personalizar calorias">${meal.calories} kcal</span>
+      <button class="meal-edit-btn" title="Personalizar refeição">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15">
+          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+        </svg>
+      </button>
       <button class="task-delete-btn" title="Excluir">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
           <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -1948,6 +1972,15 @@ function renderHealthDiet() {
       renderActivityRings();
     };
 
+    const handleEdit = (e) => {
+      e.stopPropagation();
+      openEditMealModal(meal.id);
+    };
+
+    item.querySelector('.meal-content').onclick = handleEdit;
+    item.querySelector('.meal-cal-badge').onclick = handleEdit;
+    item.querySelector('.meal-edit-btn').onclick = handleEdit;
+
     item.querySelector('.task-delete-btn').onclick = (e) => {
       e.stopPropagation();
       sound.playPop();
@@ -1958,6 +1991,26 @@ function renderHealthDiet() {
 
     container.appendChild(item);
   });
+}
+
+function openEditMealModal(mealId) {
+  const nutrition = (store.state.health && store.state.health.nutrition) ? store.state.health.nutrition : {};
+  const meal = (nutrition.meals || []).find(m => m.id === mealId);
+  if (!meal) return;
+
+  sound.playPop();
+  const idEl = document.getElementById('editMealId');
+  const nameEl = document.getElementById('editMealNameInput');
+  const itemsEl = document.getElementById('editMealItemsInput');
+  const calEl = document.getElementById('editMealCaloriesInput');
+
+  if (idEl) idEl.value = meal.id;
+  if (nameEl) nameEl.value = meal.name || '';
+  if (itemsEl) itemsEl.value = meal.items || '';
+  if (calEl) calEl.value = meal.calories || '';
+
+  openModal('editMealModal');
+  setTimeout(() => nameEl && nameEl.focus(), 50);
 }
 
 function renderHealthWorkout() {
@@ -2219,19 +2272,21 @@ function renderHealthTasks() {
 function setupHealthModals() {
   // 1. New Meal Modal
   const openMealBtn = document.getElementById('openNewMealModalBtn');
+  const openMealBtn2 = document.getElementById('openNewMealModalBtn2');
   const closeMealBtn = document.getElementById('closeNewMealModal');
   const saveMealBtn = document.getElementById('saveMealBtn');
   const mealNameInput = document.getElementById('mealNameInput');
   const mealItemsInput = document.getElementById('mealItemsInput');
   const mealCaloriesInput = document.getElementById('mealCaloriesInput');
 
-  if (openMealBtn) {
-    openMealBtn.onclick = () => {
-      sound.playPop();
-      openModal('newMealModal');
-      setTimeout(() => mealNameInput.focus(), 50);
-    };
-  }
+  const handleOpenNewMeal = () => {
+    sound.playPop();
+    openModal('newMealModal');
+    setTimeout(() => mealNameInput && mealNameInput.focus(), 50);
+  };
+
+  if (openMealBtn) openMealBtn.onclick = handleOpenNewMeal;
+  if (openMealBtn2) openMealBtn2.onclick = handleOpenNewMeal;
   if (closeMealBtn) closeMealBtn.onclick = () => closeAllModals();
 
   if (saveMealBtn) {
@@ -2240,6 +2295,10 @@ function setupHealthModals() {
       const items = mealItemsInput.value.trim() || 'Itens selecionados';
       const cals = parseInt(mealCaloriesInput.value, 10) || 350;
       if (!name) return;
+
+      if (!Array.isArray(store.state.health.nutrition.meals)) {
+        store.state.health.nutrition.meals = [];
+      }
 
       store.state.health.nutrition.meals.push({
         id: 'm_' + Date.now(),
@@ -2254,6 +2313,49 @@ function setupHealthModals() {
       mealCaloriesInput.value = '';
       store.save();
       sound.playSuccessChime();
+      closeAllModals();
+      renderHealthDiet();
+    };
+  }
+
+  // 1b. Edit / Customize Meal Modal
+  const closeEditMealBtn = document.getElementById('closeEditMealModal');
+  const saveEditMealBtn = document.getElementById('saveEditMealBtn');
+  const deleteMealModalBtn = document.getElementById('deleteMealModalBtn');
+  const editMealNameInput = document.getElementById('editMealNameInput');
+  const editMealItemsInput = document.getElementById('editMealItemsInput');
+  const editMealCaloriesInput = document.getElementById('editMealCaloriesInput');
+
+  if (closeEditMealBtn) closeEditMealBtn.onclick = () => closeAllModals();
+
+  if (saveEditMealBtn) {
+    saveEditMealBtn.onclick = () => {
+      const mealId = document.getElementById('editMealId').value;
+      const meal = (store.state.health.nutrition.meals || []).find(m => m.id === mealId);
+      if (!meal) return;
+
+      const name = editMealNameInput.value.trim();
+      const items = editMealItemsInput.value.trim() || 'Itens selecionados';
+      const cals = parseInt(editMealCaloriesInput.value, 10) || 0;
+      if (!name) return;
+
+      meal.name = name;
+      meal.items = items;
+      meal.calories = cals;
+
+      store.save();
+      sound.playSuccessChime();
+      closeAllModals();
+      renderHealthDiet();
+    };
+  }
+
+  if (deleteMealModalBtn) {
+    deleteMealModalBtn.onclick = () => {
+      const mealId = document.getElementById('editMealId').value;
+      sound.playPop();
+      store.state.health.nutrition.meals = (store.state.health.nutrition.meals || []).filter(m => m.id !== mealId);
+      store.save();
       closeAllModals();
       renderHealthDiet();
     };

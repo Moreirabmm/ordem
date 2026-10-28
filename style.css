@@ -2755,6 +2755,37 @@ textarea.apple-input::-webkit-scrollbar-thumb {
   flex-shrink: 0;
 }
 
+.meal-content {
+  cursor: pointer;
+}
+.meal-content:hover .meal-name {
+  color: var(--accent-blue);
+}
+.meal-cal-badge {
+  cursor: pointer;
+  transition: transform var(--trans-fast), background var(--trans-fast);
+}
+.meal-cal-badge:hover {
+  transform: scale(1.05);
+  background: rgba(255, 159, 10, 0.22);
+}
+.meal-edit-btn {
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: color var(--trans-fast), background var(--trans-fast);
+}
+.meal-edit-btn:hover {
+  color: var(--accent-blue);
+  background: rgba(255, 255, 255, 0.08);
+}
+
 /* Workout Section & Weight Steppers */
 .routine-selector-row {
   display: flex;
