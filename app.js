@@ -645,45 +645,41 @@ class AudioFeedback {
   }
 
   playPop() {
-    setTimeout(() => {
-      try {
-        this.init();
-        if (!this.ctx) return;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(580, this.ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.08);
-        gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.08);
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
-        osc.start();
-        osc.stop(this.ctx.currentTime + 0.09);
-      } catch (e) {}
-    }, 0);
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(580, this.ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.08);
+      gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.08);
+      osc.connect(gain);
+      gain.connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + 0.09);
+    } catch (e) {}
   }
 
   playSuccessChime() {
-    setTimeout(() => {
-      try {
-        this.init();
-        if (!this.ctx) return;
-        const now = this.ctx.currentTime;
-        [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
-          const osc = this.ctx.createOscillator();
-          const gain = this.ctx.createGain();
-          osc.type = 'sine';
-          osc.frequency.setValueAtTime(freq, now + i * 0.07);
-          gain.gain.setValueAtTime(0.1, now + i * 0.07);
-          gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.07 + 0.35);
-          osc.connect(gain);
-          gain.connect(this.ctx.destination);
-          osc.start(now + i * 0.07);
-          osc.stop(now + i * 0.07 + 0.36);
-        });
-      } catch (e) {}
-    }, 0);
+    try {
+      this.init();
+      if (!this.ctx) return;
+      const now = this.ctx.currentTime;
+      [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + i * 0.05);
+        gain.gain.setValueAtTime(0.1, now + i * 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.05 + 0.28);
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+        osc.start(now + i * 0.05);
+        osc.stop(now + i * 0.05 + 0.30);
+      });
+    } catch (e) {}
   }
 
   playFanfare() {
@@ -1164,7 +1160,7 @@ function createTodayTaskItem(task) {
 
   const toggle = (e) => {
     e.stopPropagation();
-    toggleTask(task.id);
+    toggleTask(task.id, item);
   };
 
   item.querySelector('.task-check-circle').addEventListener('click', toggle);
@@ -1503,31 +1499,51 @@ function renderFullHabits() {
 // 7. ACTIONS & HANDLERS
 // =============================================================================
 
-function toggleTask(id) {
+function toggleTask(id, explicitEl) {
   const task = store.state.tasks.find(t => t.id === id);
   if (!task) return;
 
-  const taskEl = document.querySelector(`.task-item[data-task-id="${id}"]`);
+  const taskEls = document.querySelectorAll(`.task-item[data-task-id="${id}"]`);
+  const elements = explicitEl ? [explicitEl] : (taskEls.length > 0 ? Array.from(taskEls) : []);
 
   if (!task.completed) {
-    // Marcar como concluída: feedback sonoro + animação suave de desaparecimento
+    // 1. Validação Instantânea (0ms):
+    task.completed = true;
     sound.playSuccessChime();
-    if (taskEl) {
-      taskEl.classList.add('completed');
-      taskEl.classList.add('task-completing');
-    }
+
+    // Feedback visual imediato: check azul/verde + ícone + riscado instantâneo
+    elements.forEach(el => {
+      el.classList.add('completed');
+      el.classList.add('task-check-pop');
+    });
+
+    // Atualiza anéis e contadores instantaneamente
+    renderActivityRings();
+    renderCounts();
+    const pendingTotal = store.state.tasks.filter(t => !t.completed).length;
+    const badge = document.getElementById('todayPendingBadge');
+    if (badge) badge.textContent = pendingTotal;
+
+    store.save();
+
+    // 2. Animação suave de desaparecimento após o usuário VER a confirmação do check
     setTimeout(() => {
-      task.completed = true;
-      store.save();
-      renderTodayTasks();
-      renderActivityRings();
-      renderCounts();
-      if (currentActiveArea) renderAreaDetail(currentActiveArea);
-    }, 280);
+      elements.forEach(el => el.classList.add('task-completing'));
+      setTimeout(() => {
+        renderTodayTasks();
+        if (currentActiveArea) renderAreaDetail(currentActiveArea);
+      }, 220);
+    }, 180);
+
   } else {
-    // Reabrir tarefa
-    sound.playPop();
+    // Reabrir tarefa instantaneamente (0ms)
     task.completed = false;
+    sound.playPop();
+
+    elements.forEach(el => {
+      el.classList.remove('completed', 'task-completing', 'task-check-pop');
+    });
+
     store.save();
     renderTodayTasks();
     renderActivityRings();
@@ -1802,6 +1818,7 @@ function renderAreaDetail(areaKey) {
   areaTasks.forEach(task => {
     const item = document.createElement('div');
     item.className = `task-item ${task.completed ? 'completed' : ''}`;
+    item.dataset.taskId = task.id;
     item.innerHTML = `
       <div class="task-check-circle">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
@@ -1824,7 +1841,14 @@ function renderAreaDetail(areaKey) {
       </div>
     `;
 
-    item.querySelector('.task-check-circle').addEventListener('click', () => toggleTask(task.id));
+    item.querySelector('.task-check-circle').addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleTask(task.id, item);
+    });
+    item.querySelector('.task-title').addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleTask(task.id, item);
+    });
     item.querySelector('.task-delete-btn').addEventListener('click', () => deleteTask(task.id));
 
     list.appendChild(item);
@@ -2146,6 +2170,7 @@ function renderHealthTasks() {
   healthTasks.forEach(task => {
     const item = document.createElement('div');
     item.className = `task-item ${task.completed ? 'completed' : ''}`;
+    item.dataset.taskId = task.id;
     item.innerHTML = `
       <div class="task-check-circle">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
@@ -2165,10 +2190,12 @@ function renderHealthTasks() {
       </div>
     `;
 
-    item.querySelector('.task-check-circle').onclick = () => {
-      toggleTask(task.id);
-      renderHealthTasks();
+    const toggleHealth = (e) => {
+      e.stopPropagation();
+      toggleTask(task.id, item);
     };
+    item.querySelector('.task-check-circle').onclick = toggleHealth;
+    item.querySelector('.task-title').onclick = toggleHealth;
 
     item.querySelector('.task-delete-btn').onclick = (e) => {
       e.stopPropagation();
@@ -6466,23 +6493,29 @@ function createFocusTaskCard(task) {
     </div>
   `;
 
-  // Toggle completion with smooth disappearance animation
+  // Toggle completion with instant validation + smooth subsequent collapse
   const toggleFocusTask = () => {
     if (!task.completed) {
+      task.completed = true;
       card.classList.add('completed');
-      card.classList.add('task-completing');
+      card.classList.add('task-check-pop');
       sound.playSuccessChime();
+
+      if (store.state.focus.activeTaskId === task.id) {
+        const nextActive = store.state.focus.tasks.find(t => !t.completed && t.id !== task.id);
+        store.state.focus.activeTaskId = nextActive ? nextActive.id : null;
+      }
+      store.save();
+
       setTimeout(() => {
-        task.completed = true;
-        if (store.state.focus.activeTaskId === task.id) {
-          const nextActive = store.state.focus.tasks.find(t => !t.completed && t.id !== task.id);
-          store.state.focus.activeTaskId = nextActive ? nextActive.id : null;
-        }
-        store.save();
-        renderFocusSection();
-      }, 280);
+        card.classList.add('task-completing');
+        setTimeout(() => {
+          renderFocusSection();
+        }, 220);
+      }, 180);
     } else {
       task.completed = false;
+      card.classList.remove('completed', 'task-completing', 'task-check-pop');
       sound.playPop();
       store.save();
       renderFocusSection();

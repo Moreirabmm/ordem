@@ -6405,3 +6405,25 @@ textarea.apple-input::-webkit-scrollbar-thumb {
     width: 100%;
   }
 }
+
+/* Snappy Apple Check Pop Spring Animation */
+.task-check-pop .task-check-circle {
+  animation: appleCheckBounce 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes appleCheckBounce {
+  0% { transform: scale(0.85); }
+  50% { transform: scale(1.22); }
+  100% { transform: scale(1); }
+}
+
+.task-item.completed .task-check-circle {
+  background: var(--accent-blue) !important;
+  border-color: var(--accent-blue) !important;
+  box-shadow: 0 0 12px rgba(10, 132, 255, 0.4);
+}
+
+.task-item.completed .task-check-circle svg {
+  opacity: 1 !important;
+  transform: scale(1) !important;
+}
