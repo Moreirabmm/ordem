@@ -110,7 +110,7 @@
             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
           </svg>
           <span>Sonhos & Side Quests</span>
-          <span class="badge badge-level" id="questsNavLevelBadge">Nv. 1</span>
+          
         </button>
       </nav>
 
@@ -231,31 +231,31 @@
           <div class="hero-card">
             <div class="rings-wrapper">
               <svg class="activity-rings-svg" viewBox="0 0 160 160">
-                <!-- Ring 1: Trabalho / Ações (Blue) -->
-                <circle class="ring-bg" cx="80" cy="80" r="68" stroke="rgba(0, 122, 255, 0.15)" stroke-width="12" fill="none"/>
+                <!-- Ring 1: Ações / Trabalho (Pure White) -->
+                <circle class="ring-bg" cx="80" cy="80" r="68" stroke="rgba(255, 255, 255, 0.08)" stroke-width="12" fill="none"/>
                 <circle id="ringWork" class="ring-fg" cx="80" cy="80" r="68" stroke="url(#blueGradient)" stroke-width="12" fill="none" stroke-dasharray="427.26" stroke-dashoffset="120" stroke-linecap="round"/>
                 
-                <!-- Ring 2: Saúde / Bem-estar (Green) -->
-                <circle class="ring-bg" cx="80" cy="80" r="52" stroke="rgba(52, 199, 89, 0.15)" stroke-width="12" fill="none"/>
+                <!-- Ring 2: Saúde & Corpo (Platinum Silver) -->
+                <circle class="ring-bg" cx="80" cy="80" r="52" stroke="rgba(255, 255, 255, 0.08)" stroke-width="12" fill="none"/>
                 <circle id="ringHealth" class="ring-fg" cx="80" cy="80" r="52" stroke="url(#greenGradient)" stroke-width="12" fill="none" stroke-dasharray="326.73" stroke-dashoffset="80" stroke-linecap="round"/>
 
-                <!-- Ring 3: Hábitos / Mente (Orange/Red) -->
-                <circle class="ring-bg" cx="80" cy="80" r="36" stroke="rgba(255, 149, 0, 0.15)" stroke-width="12" fill="none"/>
+                <!-- Ring 3: Hábitos & Disciplina (Cool Graphite) -->
+                <circle class="ring-bg" cx="80" cy="80" r="36" stroke="rgba(255, 255, 255, 0.08)" stroke-width="12" fill="none"/>
                 <circle id="ringHabits" class="ring-fg" cx="80" cy="80" r="36" stroke="url(#orangeGradient)" stroke-width="12" fill="none" stroke-dasharray="226.19" stroke-dashoffset="60" stroke-linecap="round"/>
 
-                <!-- SVG Gradients -->
+                <!-- Monochrome SVG Gradients -->
                 <defs>
                   <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#0A84FF"/>
-                    <stop offset="100%" stop-color="#5E5CE6"/>
+                    <stop offset="0%" stop-color="#FFFFFF"/>
+                    <stop offset="100%" stop-color="#E4E4E7"/>
                   </linearGradient>
                   <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#30D158"/>
-                    <stop offset="100%" stop-color="#66D4CF"/>
+                    <stop offset="0%" stop-color="#A1A1AA"/>
+                    <stop offset="100%" stop-color="#71717A"/>
                   </linearGradient>
                   <linearGradient id="orangeGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stop-color="#FF9F0A"/>
-                    <stop offset="100%" stop-color="#FF375F"/>
+                    <stop offset="0%" stop-color="#71717A"/>
+                    <stop offset="100%" stop-color="#3F3F46"/>
                   </linearGradient>
                 </defs>
               </svg>
@@ -263,23 +263,23 @@
             
             <div class="rings-legend">
               <div class="legend-item" data-area-filter="work">
-                <span class="legend-color-dot" style="background: #0A84FF;"></span>
+                <span class="legend-color-dot" style="background: #FFFFFF;"></span>
                 <div class="legend-meta">
-                  <span class="legend-name">Foco & Trabalho</span>
+                  <span class="legend-name">Ações & Trabalho</span>
                   <span class="legend-val" id="ringWorkVal">0%</span>
                 </div>
               </div>
               <div class="legend-item" data-area-filter="health">
-                <span class="legend-color-dot" style="background: #30D158;"></span>
+                <span class="legend-color-dot" style="background: #A1A1AA;"></span>
                 <div class="legend-meta">
-                  <span class="legend-name">Saúde & Corpo</span>
+                  <span class="legend-name">Saúde & Vitalidade</span>
                   <span class="legend-val" id="ringHealthVal">0%</span>
                 </div>
               </div>
               <div class="legend-item" data-area-filter="habits">
-                <span class="legend-color-dot" style="background: #FF9F0A;"></span>
+                <span class="legend-color-dot" style="background: #71717A;"></span>
                 <div class="legend-meta">
-                  <span class="legend-name">Hábitos & Mente</span>
+                  <span class="legend-name">Hábitos & Disciplina</span>
                   <span class="legend-val" id="ringHabitsVal">0%</span>
                 </div>
               </div>
@@ -305,51 +305,7 @@
             <button id="todayGoToMainGoalBtn" class="apple-secondary-btn-sm" style="flex-shrink: 0;">Abrir Meta &rarr;</button>
           </div>
 
-          <!-- Quick Water & Daily Vitality Row -->
-          <div class="grid-2-col">
-            <!-- Hydro Widget -->
-            <div class="card glass-card hydro-card">
-              <div class="card-header-compact">
-                <div class="card-title-group">
-                  <span class="icon-circle tint-teal">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
-                    </svg>
-                  </span>
-                  <div>
-                    <h3 class="card-title">Hidratação</h3>
-                    <p class="card-subtitle"><span id="waterCount">0</span> / <span id="waterGoalDisplay">2.500</span> ml</p>
-                  </div>
-                </div>
-                <button id="addWaterBtn" class="pill-btn tint-teal-btn">+250ml</button>
-              </div>
-              <!-- Water progress bar -->
-              <div class="progress-bar-track">
-                <div id="waterProgressBar" class="progress-bar-fill tint-teal-fill" style="width: 0%"></div>
-              </div>
-            </div>
 
-            <!-- Focus of the Day Quote / Mindset -->
-            <div class="card glass-card quote-card">
-              <div class="card-header-compact">
-                <div class="card-title-group">
-                  <span class="icon-circle tint-purple">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
-                      <line x1="9" y1="9" x2="9.01" y2="9"></line>
-                      <line x1="15" y1="9" x2="15.01" y2="9"></line>
-                    </svg>
-                  </span>
-                  <div>
-                    <h3 class="card-title">Princípio Apple</h3>
-                    <p class="card-subtitle">Foco é dizer não a 1.000 coisas.</p>
-                  </div>
-                </div>
-              </div>
-              <p class="mindset-text" id="dailyMindsetText">"A simplicidade é o grau máximo de sofisticação."</p>
-            </div>
-          </div>
 
           <!-- Hábitos do Dia (Quick Checklist) -->
           <div class="section-container">
@@ -450,13 +406,13 @@
               <div class="main-goal-ring-card">
                 <div class="main-goal-svg-container">
                   <svg class="main-goal-svg" viewBox="0 0 160 160">
-                    <circle class="ring-bg" cx="80" cy="80" r="66" stroke="rgba(10, 132, 255, 0.15)" stroke-width="14" fill="none"/>
+                    <circle class="ring-bg" cx="80" cy="80" r="66" stroke="rgba(255, 255, 255, 0.08)" stroke-width="14" fill="none"/>
                     <circle id="mainGoalSvgRing" class="ring-fg" cx="80" cy="80" r="66" stroke="url(#mainGoalGrad)" stroke-width="14" fill="none" stroke-linecap="round" stroke-dasharray="414.69" stroke-dashoffset="414.69"/>
                     <defs>
                       <linearGradient id="mainGoalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#0A84FF"/>
-                        <stop offset="50%" stop-color="#5E5CE6"/>
-                        <stop offset="100%" stop-color="#BF5AF2"/>
+                        <stop offset="0%" stop-color="#FFFFFF"/>
+                        <stop offset="50%" stop-color="#E4E4E7"/>
+                        <stop offset="100%" stop-color="#A1A1AA"/>
                       </linearGradient>
                     </defs>
                   </svg>
@@ -645,7 +601,7 @@
               <div class="timer-display-ring">
                 <svg class="timer-svg" viewBox="0 0 260 260">
                   <circle class="timer-track" cx="130" cy="130" r="110" stroke="rgba(255,255,255,0.08)" stroke-width="8" fill="none"/>
-                  <circle id="timerProgressRing" class="timer-progress" cx="130" cy="130" r="110" stroke="#007AFF" stroke-width="8" fill="none" stroke-dasharray="691.15" stroke-dashoffset="0" stroke-linecap="round"/>
+                  <circle id="timerProgressRing" class="timer-progress" cx="130" cy="130" r="110" stroke="#FFFFFF" stroke-width="8" fill="none" stroke-dasharray="691.15" stroke-dashoffset="0" stroke-linecap="round"/>
                 </svg>
                 <div class="timer-center-content">
                   <span class="timer-tag" id="timerModeTag">FOCO PROFUNDO</span>
