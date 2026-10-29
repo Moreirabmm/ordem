@@ -3,38 +3,38 @@
    ========================================================================== */
 
 :root {
-  /* Color Palette - Minimalist Black & White System */
+  /* Color Palette - Elegant Dark Minimalism with Purposeful Color Accents */
   --bg-primary: #000000;
   --bg-secondary: #0A0A0C;
-  --bg-card: rgba(18, 18, 20, 0.90);
-  --bg-card-hover: rgba(26, 26, 30, 0.95);
-  --bg-elevated: #141416;
-  --bg-pill: rgba(255, 255, 255, 0.08);
-  --bg-pill-hover: rgba(255, 255, 255, 0.15);
+  --bg-card: rgba(18, 18, 22, 0.88);
+  --bg-card-hover: rgba(28, 28, 34, 0.95);
+  --bg-elevated: #16161A;
+  --bg-pill: rgba(255, 255, 255, 0.07);
+  --bg-pill-hover: rgba(255, 255, 255, 0.14);
 
   --text-primary: #FFFFFF;
   --text-secondary: rgba(255, 255, 255, 0.70);
-  --text-tertiary: rgba(255, 255, 255, 0.40);
+  --text-tertiary: rgba(255, 255, 255, 0.42);
 
-  --border-subtle: rgba(255, 255, 255, 0.10);
-  --border-strong: rgba(255, 255, 255, 0.20);
-  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.65);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.55);
 
-  /* Apple System Accents - Pure Monochrome */
-  --accent-blue: #FFFFFF;
-  --accent-green: #E4E4E7;
-  --accent-orange: #D4D4D8;
-  --accent-red: #A1A1AA;
-  --accent-purple: #71717A;
-  --accent-teal: #E4E4E7;
-  --accent-yellow: #FFFFFF;
+  /* Apple System Accents - Purposeful Functional Colors */
+  --accent-blue: #0A84FF;
+  --accent-green: #30D158;
+  --accent-orange: #FF9F0A;
+  --accent-red: #FF453A;
+  --accent-purple: #BF5AF2;
+  --accent-teal: #64D2FF;
+  --accent-yellow: #FFD60A;
 
-  /* Life Areas Colors - Monochrome Hierarchy */
-  --area-work: #FFFFFF;       /* Crisp White */
-  --area-health: #E4E4E7;     /* High Gray */
-  --area-finance: #D4D4D8;    /* Medium-High Gray */
-  --area-study: #A1A1AA;      /* Mid Gray */
-  --area-personal: #71717A;   /* Subtle Deep Gray */
+  /* Life Areas Colors */
+  --area-work: #0A84FF;       /* Blue */
+  --area-health: #30D158;     /* Green */
+  --area-finance: #FFD60A;    /* Gold */
+  --area-study: #BF5AF2;      /* Purple */
+  --area-personal: #FF9F0A;   /* Orange */
 
   /* Dimensions & Radius */
   --radius-sm: 10px;
@@ -51,35 +51,35 @@
 
 /* Light Mode Overrides */
 [data-theme="light"] {
-  --bg-primary: #FAFAFA;
-  --bg-secondary: #F4F4F5;
-  --bg-card: #FFFFFF;
-  --bg-card-hover: #F4F4F5;
+  --bg-primary: #F2F2F7;
+  --bg-secondary: rgba(255, 255, 255, 0.85);
+  --bg-card: rgba(255, 255, 255, 0.90);
+  --bg-card-hover: #FFFFFF;
   --bg-elevated: #FFFFFF;
   --bg-pill: rgba(0, 0, 0, 0.05);
   --bg-pill-hover: rgba(0, 0, 0, 0.09);
 
-  --text-primary: #09090B;
-  --text-secondary: rgba(9, 9, 11, 0.65);
-  --text-tertiary: rgba(9, 9, 11, 0.40);
+  --text-primary: #000000;
+  --text-secondary: rgba(60, 60, 67, 0.65);
+  --text-tertiary: rgba(60, 60, 67, 0.40);
 
-  --border-subtle: rgba(0, 0, 0, 0.08);
-  --border-strong: rgba(0, 0, 0, 0.16);
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --border-strong: rgba(0, 0, 0, 0.12);
   --glass-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
 
-  --accent-blue: #09090B;
-  --accent-green: #27272A;
-  --accent-orange: #3F3F46;
-  --accent-red: #52525B;
-  --accent-purple: #71717A;
-  --accent-teal: #27272A;
-  --accent-yellow: #09090B;
+  --accent-blue: #007AFF;
+  --accent-green: #34C759;
+  --accent-orange: #FF9500;
+  --accent-red: #FF3B30;
+  --accent-purple: #AF52DE;
+  --accent-teal: #00C7BE;
+  --accent-yellow: #FFCC00;
 
-  --area-work: #09090B;
-  --area-health: #27272A;
-  --area-finance: #3F3F46;
-  --area-study: #52525B;
-  --area-personal: #71717A;
+  --area-work: #007AFF;
+  --area-health: #34C759;
+  --area-finance: #E5A100;
+  --area-study: #AF52DE;
+  --area-personal: #FF9500;
 }
 
 /* Base resets */
@@ -338,18 +338,18 @@ button, a, input, select, .habit-quick-card, .task-item, .day-dot, .nav-item, .m
 }
 
 .nav-item.active {
-  background: rgba(255, 255, 255, 0.12);
-  color: #FFFFFF;
+  background: rgba(10, 132, 255, 0.14);
+  color: var(--accent-blue);
   font-weight: 600;
 }
 
 .nav-item.active svg {
-  color: #FFFFFF;
+  color: var(--accent-blue);
 }
 
 .nav-item.active .badge {
-  background: rgba(255, 255, 255, 0.20);
-  color: #FFFFFF;
+  background: rgba(10, 132, 255, 0.25);
+  color: var(--accent-blue);
 }
 
 [data-theme="light"] .nav-item.active {
@@ -420,11 +420,11 @@ button, a, input, select, .habit-quick-card, .task-item, .day-dot, .nav-item, .m
   border-radius: 50%;
   flex-shrink: 0;
 }
-.dot-work { background: #FFFFFF; box-shadow: none; }
-.dot-health { background: #E4E4E7; box-shadow: none; }
-.dot-finance { background: #D4D4D8; box-shadow: none; }
-.dot-study { background: #A1A1AA; box-shadow: none; }
-.dot-personal { background: #71717A; box-shadow: none; }
+.dot-work { background: var(--area-work); box-shadow: 0 0 8px rgba(10, 132, 255, 0.4); }
+.dot-health { background: var(--area-health); box-shadow: 0 0 8px rgba(48, 209, 88, 0.4); }
+.dot-finance { background: var(--area-finance); box-shadow: 0 0 8px rgba(255, 214, 10, 0.4); }
+.dot-study { background: var(--area-study); box-shadow: 0 0 8px rgba(191, 90, 242, 0.4); }
+.dot-personal { background: var(--area-personal); box-shadow: 0 0 8px rgba(255, 159, 10, 0.4); }
 
 /* Sidebar Footer */
 .sidebar-footer {
@@ -883,20 +883,13 @@ button, a, input, select, .habit-quick-card, .task-item, .day-dot, .nav-item, .m
 }
 
 .habit-quick-card.completed .habit-check-circle {
-  background: #FFFFFF !important;
-  border-color: #FFFFFF !important;
+  background: var(--accent-green) !important;
+  border-color: var(--accent-green) !important;
 }
 
 .habit-quick-card.completed .habit-check-circle svg {
-  color: #000000 !important;
-}
-
-[data-theme="light"] .habit-quick-card.completed .habit-check-circle {
-  background: #000000 !important;
-  border-color: #000000 !important;
-}
-
-[data-theme="light"] .habit-quick-card.completed .habit-check-circle svg {
+  opacity: 1 !important;
+  transform: scale(1) !important;
   color: #FFFFFF !important;
 }
 
@@ -943,7 +936,8 @@ button, a, input, select, .habit-quick-card, .task-item, .day-dot, .nav-item, .m
   align-items: center;
   gap: 10px;
   padding: 12px 0 16px;
-  border-bottom: 1px solid var(--border-subtle);
+  border-bottom: none;
+  margin-bottom: 4px;
 }
 
 .quick-task-row input {
@@ -985,15 +979,15 @@ button, a, input, select, .habit-quick-card, .task-item, .day-dot, .nav-item, .m
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: #FFFFFF;
-  color: #000000;
+  background: var(--accent-blue);
+  color: #FFFFFF;
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: transform var(--trans-fast), opacity var(--trans-fast);
-  box-shadow: 0 2px 10px rgba(255, 255, 255, 0.15);
+  transition: transform var(--trans-fast), background var(--trans-fast);
+  box-shadow: 0 2px 10px rgba(10, 132, 255, 0.3);
 }
 
 .add-circle-btn svg {
@@ -1003,17 +997,11 @@ button, a, input, select, .habit-quick-card, .task-item, .day-dot, .nav-item, .m
 
 .add-circle-btn:hover {
   transform: scale(1.08);
-  background: #F4F4F5;
+  background: #0071E3;
 }
 
 .add-circle-btn:active {
   transform: scale(0.92);
-}
-
-[data-theme="light"] .add-circle-btn {
-  background: #000000;
-  color: #FFFFFF;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
 }
 
 /* Task List Items */
@@ -1026,9 +1014,15 @@ button, a, input, select, .habit-quick-card, .task-item, .day-dot, .nav-item, .m
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 14px 4px;
-  border-bottom: 1px solid var(--border-subtle);
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border-bottom: none !important;
+  margin-bottom: 2px;
   transition: background var(--trans-fast);
+}
+
+.task-item:hover {
+  background: var(--bg-pill);
 }
 
 .task-item:last-child {
@@ -1060,8 +1054,8 @@ button, a, input, select, .habit-quick-card, .task-item, .day-dot, .nav-item, .m
 .task-item.completed .task-check-circle,
 .focus-task-card.completed .task-check-circle,
 .meal-item.completed .task-check-circle {
-  background: #FFFFFF !important;
-  border-color: #FFFFFF !important;
+  background: var(--accent-green) !important;
+  border-color: var(--accent-green) !important;
 }
 
 .task-item.completed .task-check-circle svg,
@@ -1069,19 +1063,6 @@ button, a, input, select, .habit-quick-card, .task-item, .day-dot, .nav-item, .m
 .meal-item.completed .task-check-circle svg {
   opacity: 1 !important;
   transform: scale(1) !important;
-  color: #000000 !important;
-}
-
-[data-theme="light"] .task-item.completed .task-check-circle,
-[data-theme="light"] .focus-task-card.completed .task-check-circle,
-[data-theme="light"] .meal-item.completed .task-check-circle {
-  background: #000000 !important;
-  border-color: #000000 !important;
-}
-
-[data-theme="light"] .task-item.completed .task-check-circle svg,
-[data-theme="light"] .focus-task-card.completed .task-check-circle svg,
-[data-theme="light"] .meal-item.completed .task-check-circle svg {
   color: #FFFFFF !important;
 }
 
@@ -1119,17 +1100,11 @@ button, a, input, select, .habit-quick-card, .task-item, .day-dot, .nav-item, .m
   border-radius: var(--radius-pill);
 }
 
-.pill-work { background: rgba(255, 255, 255, 0.12); color: #FFFFFF; }
-.pill-health { background: rgba(255, 255, 255, 0.10); color: #E4E4E7; }
-.pill-finance { background: rgba(255, 255, 255, 0.08); color: #D4D4D8; }
-.pill-study { background: rgba(255, 255, 255, 0.08); color: #A1A1AA; }
-.pill-personal { background: rgba(255, 255, 255, 0.06); color: #71717A; }
-
-[data-theme="light"] .pill-work { background: rgba(0, 0, 0, 0.08); color: #000000; }
-[data-theme="light"] .pill-health { background: rgba(0, 0, 0, 0.06); color: #27272A; }
-[data-theme="light"] .pill-finance { background: rgba(0, 0, 0, 0.06); color: #3F3F46; }
-[data-theme="light"] .pill-study { background: rgba(0, 0, 0, 0.05); color: #52525B; }
-[data-theme="light"] .pill-personal { background: rgba(0, 0, 0, 0.05); color: #71717A; }
+.pill-work { background: rgba(10, 132, 255, 0.15) !important; color: var(--area-work) !important; }
+.pill-health { background: rgba(48, 209, 88, 0.15) !important; color: var(--area-health) !important; }
+.pill-finance { background: rgba(255, 214, 10, 0.15) !important; color: var(--area-finance) !important; }
+.pill-study { background: rgba(191, 90, 242, 0.15) !important; color: var(--area-study) !important; }
+.pill-personal { background: rgba(255, 159, 10, 0.15) !important; color: var(--area-personal) !important; }
 
 .task-priority-high {
   font-size: 11px;
@@ -1241,8 +1216,8 @@ button, a, input, select, .habit-quick-card, .task-item, .day-dot, .nav-item, .m
 }
 
 .apple-primary-btn {
-  background: #FFFFFF;
-  color: #000000;
+  background: var(--accent-blue);
+  color: #FFFFFF;
   border: none;
   font-size: 15px;
   font-weight: 600;
@@ -1252,24 +1227,20 @@ button, a, input, select, .habit-quick-card, .task-item, .day-dot, .nav-item, .m
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: transform var(--trans-fast), box-shadow var(--trans-fast), opacity var(--trans-fast);
-  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.12);
+  transition: transform var(--trans-fast), box-shadow var(--trans-fast), background var(--trans-fast);
+  box-shadow: 0 4px 16px rgba(10, 132, 255, 0.35);
 }
 
 .apple-primary-btn:hover {
   transform: translateY(-1px);
-  background: #F4F4F5;
-  box-shadow: 0 6px 20px rgba(255, 255, 255, 0.2);
+  background: #0071E3;
+  box-shadow: 0 6px 20px rgba(10, 132, 255, 0.45);
 }
 
 [data-theme="light"] .apple-primary-btn {
-  background: #000000;
+  background: var(--accent-blue);
   color: #FFFFFF;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-}
-
-[data-theme="light"] .apple-primary-btn:hover {
-  background: #18181B;
+  box-shadow: 0 4px 16px rgba(0, 122, 255, 0.25);
 }
 
 .apple-primary-btn:active {
@@ -5011,12 +4982,7 @@ textarea.apple-input::-webkit-scrollbar-thumb {
 }
 
 .quests-xp-track {
-  height: 10px;
-  border-radius: var(--radius-pill);
-  background: var(--bg-pill);
-  border: 1px solid var(--border-subtle);
-  overflow: hidden;
-  margin-bottom: 18px;
+  display: none !important;
 }
 
 .quests-xp-fill {
@@ -5654,8 +5620,8 @@ textarea.apple-input::-webkit-scrollbar-thumb {
 
 .completed-tasks-section {
   margin-top: 14px;
-  border-top: 1px dashed var(--border-subtle);
-  padding-top: 10px;
+  border-top: none !important;
+  padding-top: 6px;
 }
 
 .completed-tasks-toggle-btn {
@@ -5762,8 +5728,8 @@ textarea.apple-input::-webkit-scrollbar-thumb {
   font-size: 10px;
   font-weight: 700;
   letter-spacing: 0.08em;
-  color: var(--text-primary);
-  background: rgba(255, 255, 255, 0.12);
+  color: var(--accent-blue);
+  background: rgba(10, 132, 255, 0.15);
   padding: 2px 8px;
   border-radius: var(--radius-pill);
   text-transform: uppercase;
@@ -6018,13 +5984,9 @@ textarea.apple-input::-webkit-scrollbar-thumb {
 
 .main-goal-bar-fill {
   height: 100%;
-  background: #FFFFFF;
+  background: linear-gradient(90deg, #0A84FF, #5E5CE6, #BF5AF2);
   border-radius: var(--radius-pill);
   transition: width 0.8s var(--ease-apple);
-}
-
-[data-theme="light"] .main-goal-bar-fill {
-  background: #000000;
 }
 
 .progress-remaining-text {
@@ -6092,8 +6054,8 @@ textarea.apple-input::-webkit-scrollbar-thumb {
 }
 
 .apple-primary-btn-sm {
-  background: #FFFFFF;
-  color: #000000;
+  background: var(--accent-blue);
+  color: #FFFFFF;
   border: none;
   border-radius: var(--radius-sm);
   padding: 6px 14px;
@@ -6105,13 +6067,8 @@ textarea.apple-input::-webkit-scrollbar-thumb {
 }
 
 .apple-primary-btn-sm:hover {
-  background: #F4F4F5;
+  background: #0071E3;
   transform: translateY(-1px);
-}
-
-[data-theme="light"] .apple-primary-btn-sm {
-  background: #000000;
-  color: #FFFFFF;
 }
 
 /* The ONE Thing Card */
@@ -6150,18 +6107,17 @@ textarea.apple-input::-webkit-scrollbar-thumb {
   text-transform: uppercase;
 }
 
+.one-thing-tag {
+  color: var(--accent-yellow) !important;
+}
+
 .pulse-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #FFFFFF;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  background: var(--accent-yellow) !important;
+  box-shadow: 0 0 10px var(--accent-yellow) !important;
   animation: pulse-glow 2s infinite ease-in-out;
-}
-
-[data-theme="light"] .pulse-dot {
-  background: #000000;
-  box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
 }
 
 @keyframes pulse-glow {
@@ -6224,21 +6180,12 @@ textarea.apple-input::-webkit-scrollbar-thumb {
 }
 
 .one-thing-checkbox-circle.completed {
-  background: #FFFFFF !important;
-  border-color: #FFFFFF !important;
-  box-shadow: 0 0 14px rgba(255, 255, 255, 0.3) !important;
+  background: var(--accent-green) !important;
+  border-color: var(--accent-green) !important;
+  box-shadow: 0 0 14px rgba(48, 209, 88, 0.4) !important;
 }
 
 .one-thing-checkbox-circle.completed svg {
-  stroke: #000000 !important;
-}
-
-[data-theme="light"] .one-thing-checkbox-circle.completed {
-  background: #000000 !important;
-  border-color: #000000 !important;
-}
-
-[data-theme="light"] .one-thing-checkbox-circle.completed svg {
   stroke: #FFFFFF !important;
 }
 
@@ -6357,8 +6304,8 @@ textarea.apple-input::-webkit-scrollbar-thumb {
 }
 
 .milestone-item.done .milestone-checkbox {
-  background: #FFFFFF !important;
-  border-color: #FFFFFF !important;
+  background: var(--accent-green) !important;
+  border-color: var(--accent-green) !important;
 }
 
 .milestone-checkbox svg {
@@ -6368,15 +6315,6 @@ textarea.apple-input::-webkit-scrollbar-thumb {
 }
 
 .milestone-item.done .milestone-checkbox svg {
-  stroke: #000000 !important;
-}
-
-[data-theme="light"] .milestone-item.done .milestone-checkbox {
-  background: #000000 !important;
-  border-color: #000000 !important;
-}
-
-[data-theme="light"] .milestone-item.done .milestone-checkbox svg {
   stroke: #FFFFFF !important;
 }
 

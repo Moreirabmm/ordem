@@ -305,11 +305,11 @@ const INITIAL_DATA = {
 
 // Life areas metadata
 const LIFE_AREAS = {
-  work: { label: 'Trabalho & Projetos', color: '#FFFFFF', pillClass: 'pill-work', desc: 'Foco de carreira, entregas importantes e iniciativas estratégicas.' },
-  health: { label: 'Saúde & Bem-estar', color: '#E4E4E7', pillClass: 'pill-health', desc: 'Corpo, energia, rotina física e descanso restaurador.' },
-  finance: { label: 'Finanças Pessoais', color: '#D4D4D8', pillClass: 'pill-finance', desc: 'Gestão de orçamento, aportes inteligentes e liberdade financeira.' },
-  study: { label: 'Conhecimento & Mente', color: '#A1A1AA', pillClass: 'pill-study', desc: 'Leitura, aprendizados contínuos e clareza mental.' },
-  personal: { label: 'Vida Pessoal & Rotina', color: '#71717A', pillClass: 'pill-personal', desc: 'Rituais diários e momentos de foco.' }
+  work: { label: 'Trabalho & Projetos', color: '#0A84FF', pillClass: 'pill-work', desc: 'Foco de carreira, entregas importantes e iniciativas estratégicas.' },
+  health: { label: 'Saúde & Bem-estar', color: '#30D158', pillClass: 'pill-health', desc: 'Corpo, energia, rotina física e descanso restaurador.' },
+  finance: { label: 'Finanças Pessoais', color: '#FFD60A', pillClass: 'pill-finance', desc: 'Gestão de orçamento, aportes inteligentes e liberdade financeira.' },
+  study: { label: 'Conhecimento & Mente', color: '#BF5AF2', pillClass: 'pill-study', desc: 'Leitura, aprendizados contínuos e clareza mental.' },
+  personal: { label: 'Vida Pessoal & Rotina', color: '#FF9F0A', pillClass: 'pill-personal', desc: 'Rituais diários e momentos de foco.' }
 };
 
 // =============================================================================
@@ -2953,12 +2953,12 @@ let investCurrentCategoryFilter = 'all';
 let investCurrentBankFilter = 'all';
 
 const ASSET_CLASSES = {
-  fixed_income: { label: 'Renda Fixa / Tesouro', color: '#FFFFFF', badgeClass: 'badge-fixed' },
-  fiis: { label: 'Fundos Imobiliários (FIIs)', color: '#E4E4E7', badgeClass: 'badge-fiis' },
-  stocks: { label: 'Ações Nacionais (B3)', color: '#D4D4D8', badgeClass: 'badge-stocks' },
-  global: { label: 'Internacional / BDRs', color: '#A1A1AA', badgeClass: 'badge-global' },
-  crypto: { label: 'Criptoativos', color: '#71717A', badgeClass: 'badge-crypto' },
-  emergency: { label: 'Reserva de Emergência', color: '#E4E4E7', badgeClass: 'badge-emergency' }
+  fixed_income: { label: 'Renda Fixa / Tesouro', color: '#0A84FF', badgeClass: 'badge-fixed' },
+  fiis: { label: 'Fundos Imobiliários (FIIs)', color: '#30D158', badgeClass: 'badge-fiis' },
+  stocks: { label: 'Ações Nacionais (B3)', color: '#FF9F0A', badgeClass: 'badge-stocks' },
+  global: { label: 'Internacional / BDRs', color: '#FF375F', badgeClass: 'badge-global' },
+  crypto: { label: 'Criptoativos', color: '#BF5AF2', badgeClass: 'badge-crypto' },
+  emergency: { label: 'Reserva de Emergência', color: '#64D2FF', badgeClass: 'badge-emergency' }
 };
 
 function formatBRL(amount) {
